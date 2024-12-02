@@ -33,8 +33,10 @@ export function CameraView({ onPictureTaken }: CameraViewProps) {
     const takePicture = async () => {
         if (cameraRef) {
             try {
-                const photo = await cameraRef.takePictureAsync();
-                if (photo && photo.uri) {
+                const photo = await cameraRef.takePictureAsync({
+                    shutterSound: false
+                });
+                if (photo) {
                     onPictureTaken(photo.uri);
                 }
             } catch (error) {
