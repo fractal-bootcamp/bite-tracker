@@ -1,109 +1,117 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import { Image, Platform } from 'react-native';
+import React from 'react';
+import { SafeAreaView, ScrollView, View, Text, StyleSheet } from 'react-native';
+import PieCharts from '@/components/PieCharts';
+import MealItem from '@/components/MealItem';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+export const nutritionSummary = {
+  fat: 65,
+  carbs: 130,
+  protein: 80,
+  calories: 1800
+};
+
+export const meals = [
+  {
+    id: 1,
+    date: 'Today',
+    name: 'Grilled Chicken Salad',
+    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+    nutrition: {
+      fat: 15,
+      carbs: 10,
+      protein: 25,
+      calories: 320
+    }
+  },
+  {
+    id: 2,
+    date: 'Today',
+    name: 'Quinoa Bowl',
+    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+    nutrition: {
+      fat: 12,
+      carbs: 45,
+      protein: 15,
+      calories: 380
+    }
+  },
+  {
+    id: 3,
+    date: 'Yesterday',
+    name: 'Salmon with Roasted Vegetables',
+    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+    nutrition: {
+      fat: 22,
+      carbs: 30,
+      protein: 28,
+      calories: 450
+    }
+  },
+  {
+    id: 4,
+    date: 'Yesterday',
+    name: 'Greek Yogurt with Berries',
+    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+    nutrition: {
+      fat: 5,
+      carbs: 25,
+      protein: 15,
+      calories: 200
+    }
+  }
+];
+
 
 export default function TabTwoScreen() {
+  const groupedMeals = meals.reduce((acc, meal) => {
+    if (!acc[meal.date]) {
+      acc[meal.date] = [];
+    }
+    acc[meal.date].push(meal);
+    return acc;
+  }, {} as Record<string, typeof meals>);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
+    <SafeAreaView style={styles.container}>
+      <ScrollView>
+        <PieCharts
+          fat={nutritionSummary.fat}
+          carbs={nutritionSummary.carbs}
+          protein={nutritionSummary.protein}
+          calories={nutritionSummary.calories / 20} // Assuming 2000 calories is 100%
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+        {Object.entries(groupedMeals).map(([date, dateMeals]) => (
+          <View key={date} style={styles.section}>
+            <Text style={styles.sectionTitle}>{date}</Text>
+            {dateMeals.map((meal) => (
+              <MealItem
+                key={meal.id}
+                name={meal.name}
+                image={meal.image}
+                nutrition={meal.nutrition}
+              />
+            ))}
+          </View>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  section: {
+    marginHorizontal: 15,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
 });
+
