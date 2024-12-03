@@ -3,7 +3,8 @@ import multer from "multer";
 import cors from "cors";
 import Anthropic from "@anthropic-ai/sdk";
 import { Webhook } from "svix";
-import { createUser } from "./dbservices";
+import { createUser, getUserImagesAndFood } from "./dbservices";
+import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -152,6 +153,32 @@ app.post(
     }
     res.sendStatus(200);
     return;
+  }
+);
+
+app.get(
+  "/user-food-history",
+  ClerkExpressRequireAuth(),
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      // The clerk middleware adds the auth property to req
+      const userId = req.auth.userId;
+
+      if (!userId) {
+        res.status(401).json({ error: "Unauthorized/user id not provided" });
+        return;
+      }
+
+      const userFoodHistory = await getUserImagesAndFood(userId);
+
+      res.json({
+        success: true,
+        data: userFoodHistory,
+      });
+    } catch (error) {
+      console.error("Error fetching user food history:", error);
+      res.status(500).json({ error: "Failed to fetch food history" });
+    }
   }
 );
 
