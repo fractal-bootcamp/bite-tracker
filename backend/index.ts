@@ -1,47 +1,41 @@
 import express from "express";
-import multer from "multer";
 import cors from "cors";
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Set up multer for file uploads
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
-
-app.use(express.json());
-
-// Add CORS middleware
+app.use(express.json({ limit: "50mb" }));
 app.use(cors());
 
-// Endpoint to upload images
-app.post(
-  "/upload",
-  upload.single("image"),
-  (req: express.Request, res: express.Response): void => {
-    if (!req.file) {
-      res.status(400).json({ error: "No file uploaded." });
-      return;
-    }
-
-    console.log("File details:", {
-      filename: req.file.originalname,
-      mimetype: req.file.mimetype,
-      size: `${(req.file.size / 1024 / 1024).toFixed(2)} MB`,
-      buffer: `${req.file.buffer.length} bytes`,
-      encoding: req.file.encoding,
-      fieldname: req.file.fieldname,
-    });
-
-    res.json({
-      message: `File uploaded: ${req.file.originalname}`,
-      metadata: {
-        size: `${(req.file.size / 1024 / 1024).toFixed(2)} MB`,
-        mimetype: req.file.mimetype,
-      },
-    });
+// Updated endpoint to handle base64 images
+app.post("/upload", (req: express.Request, res: express.Response): void => {
+  if (!req.body.image) {
+    res.status(400).json({ error: "No image data received." });
+    return;
   }
-);
+
+  const base64Data = req.body.image;
+
+  // Log details about the received data
+  console.log("File details:", {
+    size: `${((base64Data.length * 0.75) / 1024 / 1024).toFixed(2)} MB`, // Approximate size
+    type: base64Data.substring(
+      base64Data.indexOf(":") + 1,
+      base64Data.indexOf(";")
+    ),
+  });
+
+  res.json({
+    message: `Image uploaded`,
+    metadata: {
+      size: `${((base64Data.length * 0.75) / 1024 / 1024).toFixed(2)} MB`,
+      type: base64Data.substring(
+        base64Data.indexOf(":") + 1,
+        base64Data.indexOf(";")
+      ),
+    },
+  });
+});
 
 // Error handling middleware
 app.use(
