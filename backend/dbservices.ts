@@ -7,16 +7,20 @@ export async function createUser(clerkId: string): Promise<User> {
   });
 }
 
-export async function getUserImagesAndFood(userId: string) {
-  return prisma.image.findMany({
+export async function getUserImagesAndFood(clerkId: string) {
+  return prisma.user.findUnique({
     where: {
-      userId: userId,
+      clerkId: clerkId,
     },
     include: {
-      foodItems: true,
-    },
-    orderBy: {
-      createdAt: "desc",
+      images: {
+        include: {
+          foodItems: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
     },
   });
 }

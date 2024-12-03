@@ -24,8 +24,10 @@ app.use((req, res, next) => {
   }
 });
 
-// Add CORS middleware
-app.use(cors());
+app.use((req: Request, res: Response, next) => {
+  console.log(`${req.method} ${req.originalUrl} - ${new Date().toISOString()}`);
+  next();
+});
 
 // Updated endpoint to handle base64 images and return structured food data
 app.post(
@@ -168,7 +170,6 @@ app.get(
         res.status(401).json({ error: "Unauthorized/user id not provided" });
         return;
       }
-
       const userFoodHistory = await getUserImagesAndFood(userId);
 
       res.json({
