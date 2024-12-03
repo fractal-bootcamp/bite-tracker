@@ -15,12 +15,11 @@ app.post(
     try {
       console.log("Received upload request");
 
-      const { image, userId } = req.body;
-      const tempUserId = userId || "temp-user-123";
+      const { image } = req.body;
+      const tempUserId = "temp-user-123";
 
       console.log("Request body:", {
         hasImage: !!image,
-        hasUserId: !!tempUserId,
         userId: tempUserId,
       });
 

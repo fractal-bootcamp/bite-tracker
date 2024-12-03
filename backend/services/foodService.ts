@@ -2,10 +2,22 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+interface FoodItem {
+  name: string;
+  calories: number;
+  carbs: number;
+  fat: number;
+  protein: number;
+}
+
+interface FoodData {
+  foodItems: FoodItem[] | null;
+}
+
 export async function saveFoodData(
   userId: string,
   imageData: string,
-  foodData: any
+  foodData: FoodData
 ) {
   try {
     // Early return if no food data or food items
@@ -14,23 +26,14 @@ export async function saveFoodData(
       return null;
     }
 
-    // First, ensure user exists (create if not)
-    const user = await prisma.user.upsert({
-      where: { clerkId: userId },
-      update: {},
-      create: {
-        clerkId: userId,
-      },
-    });
-
     // Create the image with required fields
     const image = await prisma.image.create({
       data: {
-        userId: user.id,
+        userId: userId,
         imageUrl: "https://example.com/image.jpg", // for the future we can store imageData in the cloud
         foodItems: {
           create:
-            foodData.foodItems?.map((item: any) => ({
+            foodData.foodItems.map((item) => ({
               name: item.name,
               calories: item.calories,
               carbs: item.carbs,

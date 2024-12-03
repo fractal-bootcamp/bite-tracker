@@ -71,5 +71,11 @@ export async function analyzeImageWithAnthropic(
   const responseText =
     responseContent.type === "text" ? responseContent.text : "";
 
-  return JSON.parse(responseText);
+  try {
+    return JSON.parse(responseText);
+  } catch (error) {
+    console.error("Failed to parse Anthropic API response:", error);
+    console.error("Raw response:", responseText);
+    return { foodItems: null };
+  }
 }
