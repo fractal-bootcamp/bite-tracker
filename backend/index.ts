@@ -8,7 +8,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json({ limit: "50mb" }));
 app.use(cors());
 
-// Updated endpoint to handle base64 images
+// Updated endpoint to handle base64 images and return structured food data
 app.post(
   "/upload",
   async (req: express.Request, res: express.Response): Promise<void> => {
@@ -27,7 +27,7 @@ app.post(
       // Initialize Anthropic client
       console.log("Initializing Anthropic client");
       const anthropic = new Anthropic({
-        apiKey: process.env.ANTHROPIC_API_KEY, // Make sure to add your API key to environment variables
+        apiKey: process.env.ANTHROPIC_API_KEY,
       });
 
       console.log("Sending request to Claude Vision API");
@@ -46,12 +46,24 @@ app.post(
                     base64Data.indexOf(":") + 1,
                     base64Data.indexOf(";")
                   ),
-                  data: base64Data.split(",")[1], // Remove the data:image/jpeg;base64, prefix
+                  data: base64Data.split(",")[1],
                 },
               },
               {
                 type: "text",
-                text: "Describe this image.",
+                text: `Analyze this image and if it contains food, provide nutritional estimates in the following JSON format:
+                {
+                  "foodItems": [{
+                    "name": string,
+                    "calories": number,
+                    "carbs": number,
+                    "fat": number,
+                    "protein": number
+                  }]
+                }
+                
+                If the image doesn't contain food, return { "foodItems": null }.
+                Only return the JSON, no additional text.`,
               },
             ],
           },
@@ -62,10 +74,13 @@ app.post(
       const responseText =
         responseContent.type === "text" ? responseContent.text : "";
 
-      console.log("Received response from Claude:", responseText);
+      // Parse the JSON response
+      const foodData = JSON.parse(responseText);
+      console.log("Structured food data:", foodData);
+
       res.json({
-        message: "Image processed by Claude",
-        response: responseText,
+        message: "Image processed successfully",
+        data: foodData,
       });
     } catch (error) {
       console.error("Error processing image:", error);
