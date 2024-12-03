@@ -53,6 +53,8 @@ app.post(
       res.status(500).send("Missing CLERK_WEBHOOK_SECRET");
       return;
     }
+    //check if svix headers are present and correct
+    //svix is needed to verify the request is from clerk
     if (
       typeof req.headers["svix-id"] !== "string" ||
       typeof req.headers["svix-timestamp"] !== "string" ||
@@ -67,7 +69,7 @@ app.post(
       "svix-timestamp": req.headers["svix-timestamp"],
       "svix-signature": req.headers["svix-signature"],
     };
-
+    //verify the request is from clerk with svix
     const wh = new Webhook(secret);
     const payload = wh.verify(req.body, header);
     if (!payload) {
@@ -75,10 +77,13 @@ app.post(
       res.status(400).send("Invalid payload");
       return;
     }
+    //parse the request body as json
     const clerkEvent = JSON.parse(req.body.toString());
+    //check if the event is a user.created event
     if (clerkEvent.type === "user.created") {
       //haven't tested this if statement yet
       const clerkId = clerkEvent.data.id;
+      //create the new user in our database
       await createUser(clerkId);
     }
     res.sendStatus(200);
