@@ -1,0 +1,43 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id            String   @id @default(cuid())
+    clerkId       String   @unique
+    images        Image[]
+    calorieTarget Int
+    carbTarget    Int
+    fatTarget     Int
+    proteinTarget Int
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+}
+
+model Image {
+    id        String     @id @default(cuid())
+    userId    String
+    imageUrl  String
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
+    user      User       @relation(fields: [userId], references: [id])
+    foodItems FoodItem[]
+}
+
+model FoodItem {
+    id        String   @id @default(cuid())
+    name      String
+    calories  Int
+    carbs     Int
+    fat       Int
+    protein   Int
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    imageId   String
+    image     Image    @relation(fields: [imageId], references: [id])
+}
