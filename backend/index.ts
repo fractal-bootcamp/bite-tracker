@@ -2,7 +2,7 @@ import express, { type Request, type Response } from "express";
 import multer from "multer";
 import cors from "cors";
 import { Webhook } from "svix";
-
+import { createUser } from "./dbservices";
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -46,7 +46,7 @@ app.post(
 app.post(
   "/clerk-webhook",
   express.raw({ type: "*/*" }),
-  (req: express.Request, res: express.Response): void => {
+  async (req: express.Request, res: express.Response): Promise<void> => {
     const secret = process.env.CLERK_WEBHOOK_SECRET;
     if (!secret) {
       console.error("Missing CLERK_WEBHOOK_SECRET");
@@ -74,6 +74,12 @@ app.post(
       console.warn("Invalid wh payload");
       res.status(400).send("Invalid payload");
       return;
+    }
+    const clerkEvent = JSON.parse(req.body.toString());
+    if (clerkEvent.type === "user.created") {
+      //haven't tested this if statement yet
+      const clerkId = clerkEvent.data.id;
+      await createUser(clerkId);
     }
     res.sendStatus(200);
     return;
