@@ -49,12 +49,23 @@ export function CameraView({ onPictureTaken }: CameraViewProps) {
 
     const uploadImage = async (uri: string) => {
         try {
-            const formData = new FormData();
-            formData.append('image', new Blob([uri], { type: 'image/jpeg' }), 'image.jpg');
+            // Convert URI to base64
+            const response = await fetch(uri);
+            const blob = await response.blob();
+            const base64 = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
 
             await fetch('http://localhost:3000/upload', {
                 method: 'POST',
-                body: formData,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    image: base64
+                }),
             });
         } catch (error) {
             console.error('Upload error:', error);
