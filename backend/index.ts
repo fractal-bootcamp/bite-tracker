@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import Anthropic from "@anthropic-ai/sdk";
+import { saveFoodData } from "./services/foodService";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -15,13 +16,28 @@ app.post(
     try {
       console.log("Received upload request");
 
-      if (!req.body.image) {
-        console.log("No image data in request");
-        res.status(400).json({ error: "No image data received." });
+      const { image, userId } = req.body;
+      // Add temporary user ID for testing
+      const tempUserId = userId || "temp-user-123";
+
+      console.log("Request body:", {
+        hasImage: !!image,
+        hasUserId: !!tempUserId,
+        userId: tempUserId,
+      });
+
+      if (!image) {
+        console.log("Missing image data in request");
+        res.status(400).json({
+          error: "Missing image data.",
+          missing: {
+            image: !image,
+          },
+        });
         return;
       }
 
-      const base64Data = req.body.image;
+      const base64Data = image;
       console.log("Base64 data received, length:", base64Data.length);
 
       // Initialize Anthropic client
@@ -78,9 +94,12 @@ app.post(
       const foodData = JSON.parse(responseText);
       console.log("Structured food data:", foodData);
 
+      // Save the food data to the database using tempUserId
+      const savedImage = await saveFoodData(tempUserId, base64Data, foodData);
+
       res.json({
-        message: "Image processed successfully",
-        data: foodData,
+        message: "Image processed and data saved successfully",
+        data: savedImage,
       });
     } catch (error) {
       console.error("Error processing image:", error);
