@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "calorieTarget" DROP NOT NULL,
+ALTER COLUMN "carbTarget" DROP NOT NULL,
+ALTER COLUMN "fatTarget" DROP NOT NULL,
+ALTER COLUMN "proteinTarget" DROP NOT NULL;

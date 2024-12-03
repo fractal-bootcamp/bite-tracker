@@ -11,10 +11,10 @@ model User {
     id            String   @id @default(cuid())
     clerkId       String   @unique
     images        Image[]
-    calorieTarget Int
-    carbTarget    Int
-    fatTarget     Int
-    proteinTarget Int
+    calorieTarget Int?
+    carbTarget    Int?
+    fatTarget     Int?
+    proteinTarget Int?
     createdAt     DateTime @default(now())
     updatedAt     DateTime @updatedAt
 }
