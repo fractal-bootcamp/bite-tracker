@@ -1,6 +1,6 @@
 import { CameraView as ExpoCameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, Alert } from 'react-native';
 
 interface CameraViewProps {
     onPictureTaken: (uri: string) => void;
@@ -37,11 +37,27 @@ export function CameraView({ onPictureTaken }: CameraViewProps) {
                     shutterSound: false
                 });
                 if (photo) {
+                    await uploadImage(photo.uri);
                     onPictureTaken(photo.uri);
                 }
             } catch (error) {
                 console.error('Error taking picture:', error);
+                Alert.alert('Error', 'Failed to take picture');
             }
+        }
+    };
+
+    const uploadImage = async (uri: string) => {
+        try {
+            const formData = new FormData();
+            formData.append('image', new Blob([uri], { type: 'image/jpeg' }), 'image.jpg');
+
+            await fetch('http://localhost:3000/upload', {
+                method: 'POST',
+                body: formData,
+            });
+        } catch (error) {
+            console.error('Upload error:', error);
         }
     };
 
