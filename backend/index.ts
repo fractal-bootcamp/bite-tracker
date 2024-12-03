@@ -27,11 +27,18 @@ app.post(
     console.log("File details:", {
       filename: req.file.originalname,
       mimetype: req.file.mimetype,
-      size: req.file.size,
+      size: `${(req.file.size / 1024 / 1024).toFixed(2)} MB`,
+      buffer: `${req.file.buffer.length} bytes`,
+      encoding: req.file.encoding,
+      fieldname: req.file.fieldname,
     });
 
     res.json({
       message: `File uploaded: ${req.file.originalname}`,
+      metadata: {
+        size: `${(req.file.size / 1024 / 1024).toFixed(2)} MB`,
+        mimetype: req.file.mimetype,
+      },
     });
   }
 );
