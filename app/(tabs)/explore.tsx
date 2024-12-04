@@ -6,6 +6,7 @@ import { useAuth } from '@clerk/clerk-expo';
 import { fetchMeals } from '../client';
 import { MealsAndSummary, transformFoodItemsToTargets, transformFoodItemstoMealsAndSummary } from '../services/renderTransforms';
 import { TransformedMeal } from '../services/renderTransforms';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export interface NutritionSummary {
   values: {
@@ -51,10 +52,14 @@ export default function TabTwoScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-
+      <LinearGradient
+        colors={['#1a1a1a', '#000000']}
+        style={styles.header}
+      >
+        <Text style={styles.headerTitle}>Macro Dashboard</Text>
+      </LinearGradient>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         {Object.entries(meals).map(([_, dateMeals]) => (
-
           <View key={dateMeals.meals[0].date} style={styles.section}>
             {targets && (
               <>
@@ -112,6 +117,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  header: {
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#b2ebf2',
+  },
+  headerTitle: {
+    fontSize: 20,
+    marginLeft: 1,
+    fontWeight: 'bold',
+    color: "#d0d0d0", // darker off-white color
+    textAlign: 'left',
+  },
+  scrollContent: {
+    paddingTop: 15,
   },
   section: {
     marginHorizontal: 15,
