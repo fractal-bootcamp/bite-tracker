@@ -39,8 +39,9 @@ export default function TabTwoScreen() {
         const foodItems = await fetchMeals(token);
 
         if (foodItems) {
-          const transformedMeals = transformFoodItemsToMeals(foodItems);
           setTargets({ calorieTarget: foodItems.calorieTarget, fatTarget: foodItems.fatTarget, carbTarget: foodItems.carbTarget, proteinTarget: foodItems.proteinTarget });
+
+          const transformedMeals = transformFoodItemsToMeals(foodItems);
           setMeals(transformedMeals);
 
           const summary = transformFoodItemsToTargets(foodItems);
