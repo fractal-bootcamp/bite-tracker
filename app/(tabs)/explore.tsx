@@ -6,7 +6,6 @@ import { useAuth } from '@clerk/clerk-expo';
 import { fetchMeals } from '../client';
 import { transformFoodItemsToMeals, transformFoodItemsToTargets } from '../services/renderTransforms';
 import { TransformedMeal } from '../services/renderTransforms';
-import { FoodItems } from '../client';
 
 export interface NutritionSummary {
   values: {
@@ -33,7 +32,6 @@ export default function TabTwoScreen() {
   });
 
   useEffect(() => {
-
     getToken().then(async (token) => {
       if (token) {
         const foodItems = await fetchMeals(token);

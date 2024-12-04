@@ -1,4 +1,5 @@
 import { FoodItems } from "../client";
+import { formatDate } from "../utils/dates";
 
 export interface TransformedMeal {
   id: string;
@@ -18,11 +19,7 @@ export const transformFoodItemsToMeals = (
   return foodItems.images.flatMap((image, index) => {
     return image.foodItems.map((foodItem) => ({
       id: foodItem.id, // You might want to use a more unique ID
-      date:
-        new Date(foodItem.createdAt).toLocaleDateString() ===
-        new Date().toLocaleDateString()
-          ? "Today"
-          : "Yesterday", // Simplified date handling - you might want to expand this
+      date: formatDate(new Date(foodItem.createdAt)),
       name: foodItem.name,
       nutrition: {
         fat: foodItem.fat || 0,
