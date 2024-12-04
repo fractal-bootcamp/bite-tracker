@@ -4,55 +4,46 @@ import PieCharts from '@/components/PieCharts';
 import MealItem from '@/components/MealItem';
 import { useAuth } from '@clerk/clerk-expo';
 import { fetchMeals } from '../client';
-import { transformFoodItemsToMeals } from '../services/renderTransforms';
+import { transformFoodItemsToMeals, transformFoodItemsToTargets } from '../services/renderTransforms';
 import { TransformedMeal } from '../services/renderTransforms';
 import { FoodItems } from '../client';
 
-export const nutritionSummary = {
-  fat: 65,
-  carbs: 130,
-  protein: 80,
-  calories: 1800
-};
+export interface NutritionSummary {
+  values: {
+    fat: number;
+    carbs: number;
+    protein: number;
+    calories: number;
+  };
+  percentages: {
+    fat: number;
+    carbs: number;
+    protein: number;
+    calories: number;
+  };
+}
 
 export default function TabTwoScreen() {
   const { getToken } = useAuth();
   const [meals, setMeals] = React.useState<TransformedMeal[]>([]);
   const [targets, setTargets] = React.useState<{ calorieTarget: number, fatTarget: number, carbTarget: number, proteinTarget: number } | null>(null);
-  const [nutritionSummary, setNutritionSummary] = React.useState({
-    fat: 0,
-    carbs: 0,
-    protein: 0,
-    calories: 0,
+  const [nutritionSummary, setNutritionSummary] = React.useState<NutritionSummary>({
+    values: { fat: 0, carbs: 0, protein: 0, calories: 0 },
+    percentages: { fat: 0, carbs: 0, protein: 0, calories: 0 },
   });
 
   useEffect(() => {
+
     getToken().then(async (token) => {
       if (token) {
         const foodItems = await fetchMeals(token);
+
         if (foodItems) {
           const transformedMeals = transformFoodItemsToMeals(foodItems);
           setTargets({ calorieTarget: foodItems.calorieTarget, fatTarget: foodItems.fatTarget, carbTarget: foodItems.carbTarget, proteinTarget: foodItems.proteinTarget });
           setMeals(transformedMeals);
 
-          // Calculate nutrition summary
-          const summary = transformedMeals.reduce((acc: {
-            fat: number;
-            carbs: number;
-            protein: number;
-            calories: number;
-          }, meal: TransformedMeal) => ({
-            fat: acc.fat + meal.nutrition.fat,
-            carbs: acc.carbs + meal.nutrition.carbs,
-            protein: acc.protein + meal.nutrition.protein,
-            calories: acc.calories + meal.nutrition.calories,
-          }), {
-            fat: 0,
-            carbs: 0,
-            protein: 0,
-            calories: 0,
-          });
-
+          const summary = transformFoodItemsToTargets(foodItems);
           setNutritionSummary(summary);
         }
       } else {
@@ -75,27 +66,35 @@ export default function TabTwoScreen() {
         {targets && (
           <>
             <PieCharts
-              fat={nutritionSummary.fat / (targets.fatTarget / 100)}
-              carbs={nutritionSummary.carbs / (targets.carbTarget / 100)}
-              protein={nutritionSummary.protein / (targets.proteinTarget / 100)}
-              calories={nutritionSummary.calories / (targets.calorieTarget / 100)}
+              fat={nutritionSummary.percentages.fat}
+              carbs={nutritionSummary.percentages.carbs}
+              protein={nutritionSummary.percentages.protein}
+              calories={nutritionSummary.percentages.calories}
             />
             <View style={styles.nutritionSummary}>
               <View style={styles.nutritionItem}>
                 <Text style={styles.label}>Calories</Text>
-                <Text style={styles.values}>{Math.round(nutritionSummary.calories)} / {targets.calorieTarget}</Text>
+                <Text style={styles.values}>
+                  {Math.round(nutritionSummary.values.calories)} / {targets.calorieTarget}
+                </Text>
               </View>
               <View style={styles.nutritionItem}>
                 <Text style={styles.label}>Fat</Text>
-                <Text style={styles.values}>{Math.round(nutritionSummary.fat)}g / {targets.fatTarget}g</Text>
+                <Text style={styles.values}>
+                  {Math.round(nutritionSummary.values.fat)}g / {targets.fatTarget}g
+                </Text>
               </View>
               <View style={styles.nutritionItem}>
                 <Text style={styles.label}>Carbs</Text>
-                <Text style={styles.values}>{Math.round(nutritionSummary.carbs)}g / {targets.carbTarget}g</Text>
+                <Text style={styles.values}>
+                  {Math.round(nutritionSummary.values.carbs)}g / {targets.carbTarget}g
+                </Text>
               </View>
               <View style={styles.nutritionItem}>
                 <Text style={styles.label}>Protein</Text>
-                <Text style={styles.values}>{Math.round(nutritionSummary.protein)}g / {targets.proteinTarget}g</Text>
+                <Text style={styles.values}>
+                  {Math.round(nutritionSummary.values.protein)}g / {targets.proteinTarget}g
+                </Text>
               </View>
             </View>
           </>

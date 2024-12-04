@@ -21,9 +21,9 @@ async function seed() {
       imageUrl: "https://example.com/image.jpg",
       foodItems: {
         create: [
-          { name: "Chicken", calories: 100, carbs: 10, fat: 10, protein: 10 },
-          { name: "Beef", calories: 100, carbs: 10, fat: 10, protein: 10 },
-          { name: "Pizza", calories: 50, carbs: 10, fat: 10, protein: 10 },
+          { name: "Salmon", calories: 200, carbs: 0, fat: 13, protein: 22 },
+          { name: "Quinoa", calories: 120, carbs: 21, fat: 2, protein: 4 },
+          { name: "Broccoli", calories: 55, carbs: 11, fat: 0.6, protein: 4 },
         ],
       },
     },
@@ -34,9 +34,15 @@ async function seed() {
       imageUrl: "https://example.com/image2.jpg",
       foodItems: {
         create: [
-          { name: "Lettuce", calories: 100, carbs: 10, fat: 10, protein: 10 },
-          { name: "Tomato", calories: 100, carbs: 10, fat: 10, protein: 10 },
-          { name: "Cheese", calories: 50, carbs: 10, fat: 10, protein: 10 },
+          { name: "Avocado", calories: 160, carbs: 9, fat: 15, protein: 2 },
+          { name: "Egg", calories: 70, carbs: 1, fat: 5, protein: 6 },
+          {
+            name: "Brown Rice",
+            calories: 215,
+            carbs: 45,
+            fat: 1.5,
+            protein: 5,
+          },
         ],
       },
     },
