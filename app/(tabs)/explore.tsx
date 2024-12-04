@@ -72,12 +72,34 @@ export default function TabTwoScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        <PieCharts
-          fat={nutritionSummary.fat}
-          carbs={nutritionSummary.carbs}
-          protein={nutritionSummary.protein}
-          calories={nutritionSummary.calories / 20} // Assuming 2000 calories is 100%
-        />
+        {targets && (
+          <>
+            <PieCharts
+              fat={nutritionSummary.fat / (targets.fatTarget / 100)}
+              carbs={nutritionSummary.carbs / (targets.carbTarget / 100)}
+              protein={nutritionSummary.protein / (targets.proteinTarget / 100)}
+              calories={nutritionSummary.calories / (targets.calorieTarget / 100)}
+            />
+            <View style={styles.nutritionSummary}>
+              <View style={styles.nutritionItem}>
+                <Text style={styles.label}>Calories</Text>
+                <Text style={styles.values}>{Math.round(nutritionSummary.calories)} / {targets.calorieTarget}</Text>
+              </View>
+              <View style={styles.nutritionItem}>
+                <Text style={styles.label}>Fat</Text>
+                <Text style={styles.values}>{Math.round(nutritionSummary.fat)}g / {targets.fatTarget}g</Text>
+              </View>
+              <View style={styles.nutritionItem}>
+                <Text style={styles.label}>Carbs</Text>
+                <Text style={styles.values}>{Math.round(nutritionSummary.carbs)}g / {targets.carbTarget}g</Text>
+              </View>
+              <View style={styles.nutritionItem}>
+                <Text style={styles.label}>Protein</Text>
+                <Text style={styles.values}>{Math.round(nutritionSummary.protein)}g / {targets.proteinTarget}g</Text>
+              </View>
+            </View>
+          </>
+        )}
         {Object.entries(groupedMeals).map(([date, dateMeals]) => (
           <View key={date} style={styles.section}>
             <Text style={styles.sectionTitle}>{date}</Text>
@@ -109,6 +131,26 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
+  },
+  nutritionSummary: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    backgroundColor: 'white',
+    marginBottom: 15,
+  },
+  nutritionItem: {
+    alignItems: 'center',
+  },
+  label: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 2,
+  },
+  values: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 
