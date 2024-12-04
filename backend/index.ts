@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { saveFoodData } from "./services/foodService";
 import { analyzeImageWithAnthropic } from "./services/anthropicService";
+import { PrismaClient } from "@prisma/client";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -9,6 +10,14 @@ const port = process.env.PORT || 3000;
 app.use(express.json({ limit: "50mb" }));
 app.use(cors());
 
+const prisma = new PrismaClient();
+
+/**
+ * TEMPORARY SOLUTION: Creating temporary users for each upload
+ * TODO: Replace with proper auth using Clerk.js
+ * Issues: No cleanup for temp users, accumulates in DB
+ * See schema.prisma (lines 10-20) for User model structure
+ */
 app.post(
   "/upload",
   async (req: express.Request, res: express.Response): Promise<void> => {
@@ -16,11 +25,17 @@ app.post(
       console.log("Received upload request");
 
       const { image } = req.body;
-      const tempUserId = "temp-user-123";
+
+      // Create a temporary user first
+      const tempUser = await prisma.user.create({
+        data: {
+          clerkId: `temp-${Date.now()}`, // Generate a unique temporary clerk ID
+        },
+      });
 
       console.log("Request body:", {
         hasImage: !!image,
-        userId: tempUserId,
+        userId: tempUser.id,
       });
 
       if (!image) {
@@ -40,7 +55,7 @@ app.post(
       const foodData = await analyzeImageWithAnthropic(base64Data);
       console.log("Structured food data:", foodData);
 
-      const savedImage = await saveFoodData(tempUserId, base64Data, foodData);
+      const savedImage = await saveFoodData(tempUser.id, base64Data, foodData);
 
       res.json({
         message: "Image processed and data saved successfully",
