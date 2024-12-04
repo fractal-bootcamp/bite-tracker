@@ -6,6 +6,7 @@ export interface MacroTarget {
   carbs: number;
   fat: number;
 }
+
 export type FoodItems = {
   fatTarget: number;
   proteinTarget: number;
@@ -13,9 +14,7 @@ export type FoodItems = {
   calorieTarget: number;
   images: {
     foodItems: FoodItem[];
-    // other Image properties
   }[];
-  // other User properties
 };
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -58,4 +57,9 @@ export const fetchMeals = async (token: string) => {
   const foodItems: FoodItems = data["data"];
   console.log(foodItems);
   return foodItems;
+};
+
+export default {
+  updateTargets,
+  fetchMeals,
 };
