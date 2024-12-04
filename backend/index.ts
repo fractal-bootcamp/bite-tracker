@@ -176,11 +176,11 @@ app.post(
       }
 
       if (
-        !targets ||
-        !targets.calories ||
-        !targets.protein ||
-        !targets.carbs ||
-        !targets.fat
+        typeof targets !== "object" ||
+        typeof targets.calories !== "number" ||
+        typeof targets.protein !== "number" ||
+        typeof targets.carbs !== "number" ||
+        typeof targets.fat !== "number"
       ) {
         res.status(400).json({ error: "Invalid targets provided" });
         return;
