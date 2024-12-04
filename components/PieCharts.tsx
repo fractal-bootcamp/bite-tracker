@@ -41,6 +41,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 20,
+    backgroundColor: '#f0f0f0',
+    marginTop: 10,
+    borderBottomColor: '#000000',
+    borderBottomWidth: 1,
   },
   pieContainer: {
     alignItems: 'center',

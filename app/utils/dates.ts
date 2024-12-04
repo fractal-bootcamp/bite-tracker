@@ -1,14 +1,19 @@
 export const formatDate = (date: Date): string => {
-  return date.toLocaleDateString();
-};
-
-export const isToday = (date: Date): boolean => {
   const today = new Date();
-  return date.toDateString() === today.toDateString();
-};
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
 
-// Add default export
-export default {
-  formatDate,
-  isToday,
+  if (date.toDateString() === today.toDateString()) {
+    return "Today";
+  } else if (date.toDateString() === yesterday.toDateString()) {
+    return "Yesterday";
+  } else if (date > new Date(today.setDate(today.getDate() - 6))) {
+    return date.toLocaleString("default", { weekday: "long" });
+  } else {
+    return date.toLocaleDateString("default", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
 };

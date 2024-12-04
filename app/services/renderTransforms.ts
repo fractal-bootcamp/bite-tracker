@@ -1,4 +1,5 @@
 import { FoodItems } from "../client";
+import { formatDate } from "../utils/dates";
 
 export interface TransformedMeal {
   id: string;
@@ -12,17 +13,44 @@ export interface TransformedMeal {
   };
 }
 
-export const transformFoodItemsToMeals = (
+export type MealsAndSummary = {
+  meals: TransformedMeal[];
+  summary: NutritionSummary;
+}[];
+
+export const transformFoodItemstoMealsAndSummary = (
   foodItems: FoodItems
-): TransformedMeal[] => {
+): MealsAndSummary => {
+  const meals = transformFoodItemsToMeals(foodItems);
+  const groupedMeals = meals.reduce((acc, meal) => {
+    if (!acc[meal.date]) {
+      acc[meal.date] = [];
+    }
+    acc[meal.date].push(meal);
+    return acc;
+  }, {} as Record<string, typeof meals>);
+
+  const mealsWithSummary = Object.values(groupedMeals).map((dateMeals) => {
+    const summary = transformFoodItemsToTargets(dateMeals, {
+      fatTarget: foodItems.fatTarget,
+      carbTarget: foodItems.carbTarget,
+      proteinTarget: foodItems.proteinTarget,
+      calorieTarget: foodItems.calorieTarget,
+    });
+    return {
+      meals: dateMeals,
+      summary,
+    };
+  });
+
+  return mealsWithSummary;
+};
+
+const transformFoodItemsToMeals = (foodItems: FoodItems): TransformedMeal[] => {
   return foodItems.images.flatMap((image, index) => {
     return image.foodItems.map((foodItem) => ({
       id: foodItem.id, // You might want to use a more unique ID
-      date:
-        new Date(foodItem.createdAt).toLocaleDateString() ===
-        new Date().toLocaleDateString()
-          ? "Today"
-          : "Yesterday", // Simplified date handling - you might want to expand this
+      date: formatDate(new Date(foodItem.createdAt)),
       name: foodItem.name,
       nutrition: {
         fat: foodItem.fat || 0,
@@ -32,35 +60,6 @@ export const transformFoodItemsToMeals = (
       },
     }));
   });
-};
-
-export const transformTargetsToSummary = (
-  transformedMeals: TransformedMeal[]
-) => {
-  // Calculate nutrition summary
-  const summary = transformedMeals.reduce(
-    (
-      acc: {
-        fat: number;
-        carbs: number;
-        protein: number;
-        calories: number;
-      },
-      meal: TransformedMeal
-    ) => ({
-      fat: acc.fat + meal.nutrition.fat,
-      carbs: acc.carbs + meal.nutrition.carbs,
-      protein: acc.protein + meal.nutrition.protein,
-      calories: acc.calories + meal.nutrition.calories,
-    }),
-    {
-      fat: 0,
-      carbs: 0,
-      protein: 0,
-      calories: 0,
-    }
-  );
-  return summary;
 };
 
 export interface NutritionSummary {
@@ -79,39 +78,38 @@ export interface NutritionSummary {
 }
 
 export const transformFoodItemsToTargets = (
-  foodItems: FoodItems
+  foodItems: TransformedMeal[],
+  targets: {
+    fatTarget: number;
+    carbTarget: number;
+    proteinTarget: number;
+    calorieTarget: number;
+  }
 ): NutritionSummary => {
   // Calculate total values
-  const values = foodItems.images
-    .flatMap((image) =>
-      image.foodItems.filter((item) => {
-        const itemDate = new Date(item.createdAt).toLocaleDateString();
-        const today = new Date().toLocaleDateString();
-        return itemDate === today;
-      })
-    )
-    .reduce(
-      (acc, item) => ({
-        fat: acc.fat + (item.fat || 0),
-        carbs: acc.carbs + (item.carbs || 0),
-        protein: acc.protein + (item.protein || 0),
-        calories: acc.calories + (item.calories || 0),
-      }),
-      {
-        fat: 0,
-        carbs: 0,
-        protein: 0,
-        calories: 0,
-      }
-    );
+  const values = foodItems.reduce(
+    (acc, item) => ({
+      fat: acc.fat + (item.nutrition.fat || 0),
+      carbs: acc.carbs + (item.nutrition.carbs || 0),
+      protein: acc.protein + (item.nutrition.protein || 0),
+      calories: acc.calories + (item.nutrition.calories || 0),
+    }),
+    {
+      fat: 0,
+      carbs: 0,
+      protein: 0,
+      calories: 0,
+    }
+  );
 
   // Calculate percentages
   const percentages = {
-    fat: values.fat / (foodItems.fatTarget / 100),
-    carbs: values.carbs / (foodItems.carbTarget / 100),
-    protein: values.protein / (foodItems.proteinTarget / 100),
-    calories: values.calories / (foodItems.calorieTarget / 100),
+    fat: values.fat / (targets.fatTarget / 100),
+    carbs: values.carbs / (targets.carbTarget / 100),
+    protein: values.protein / (targets.proteinTarget / 100),
+    calories: values.calories / (targets.calorieTarget / 100),
   };
+  console.log("values", values);
 
   return { values, percentages };
 };
