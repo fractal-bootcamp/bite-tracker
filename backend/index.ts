@@ -6,7 +6,11 @@ import { analyzeImageWithAnthropic } from "./services/anthropicService";
 import { PrismaClient } from "@prisma/client";
 import Anthropic from "@anthropic-ai/sdk";
 import { Webhook } from "svix";
-import { createUser, getUserImagesAndFood } from "./dbservices";
+import {
+  createUser,
+  getUserImagesAndFood,
+  updateUserTargets,
+} from "./dbservices";
 import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
 
 const app = express();
@@ -138,13 +142,56 @@ app.post(
   }
 );
 
+app.post(
+  "/update-targets",
+  ClerkExpressRequireAuth(),
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.auth!.userId;
+      const targets = req.body;
+
+      if (!userId) {
+        res.status(401).json({ error: "Unauthorized/user id not provided" });
+        return;
+      }
+
+      if (
+        typeof targets !== "object" ||
+        typeof targets.calories !== "number" ||
+        typeof targets.protein !== "number" ||
+        typeof targets.carbs !== "number" ||
+        typeof targets.fat !== "number"
+      ) {
+        res.status(400).json({ error: "Invalid targets provided" });
+        return;
+      }
+
+      const updatedUser = await updateUserTargets(userId, targets);
+
+      res.json({
+        success: true,
+        data: updatedUser,
+      });
+    } catch (error) {
+      console.error("Error updating user targets:", error);
+      res.status(500).json({ error: "Failed to update targets" });
+    }
+  }
+);
+
+interface AuthenticatedRequest extends Request {
+  auth?: {
+    userId: string;
+  };
+}
+
 app.get(
   "/user-food-history",
   ClerkExpressRequireAuth(),
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       // The clerk middleware adds the auth property to req
-      const userId = req.auth.userId;
+      const userId = req.auth!.userId;
 
       if (!userId) {
         res.status(401).json({ error: "Unauthorized/user id not provided" });

@@ -4,6 +4,7 @@ import { SafeAreaView, ScrollView, View, Text, StyleSheet } from 'react-native';
 import PieCharts from '@/components/PieCharts';
 import MealItem from '@/components/MealItem';
 import { useAuth } from '@clerk/clerk-expo';
+import { fetchMeals } from '../client';
 
 export const nutritionSummary = {
   fat: 65,
@@ -63,17 +64,7 @@ export const meals = [
   }
 ];
 
-const fetchMeals = async (token: string) => {
-  if (!process.env.EXPO_PUBLIC_BACKEND_URL) {
-    throw new Error("Missing EXPO_PUBLIC_BACKEND_URL");
-  }
-  const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/user-food-history`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-  const data = await response.json();
-};
+
 export default function TabTwoScreen() {
   // Inside your component:
   const { getToken } = useAuth()
