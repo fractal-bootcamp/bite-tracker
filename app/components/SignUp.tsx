@@ -63,10 +63,14 @@ export default function SignUpScreen({ onToggleAuth }: SignUpScreenProps) {
     }
 
     return (
-        <View style={styles.container}>
+        <LinearGradient
+            colors={['#E0F7FA', '#B2EBF2', '#80DEEA']}
+            style={styles.container}
+        >
             <View style={styles.formContainer}>
-                <Text style={styles.title}>Welcome to BiteTracker</Text>
-                <Text style={styles.subtitle}>Savor every moment, track with joy</Text>
+                <Text style={styles.title}>Savor every moment...{'\n'} track with joy</Text>
+
+                <Text style={styles.subtitle}>Create an account to get started</Text>
 
                 {!pendingVerification && (
                     <>
@@ -75,14 +79,14 @@ export default function SignUpScreen({ onToggleAuth }: SignUpScreenProps) {
                             autoCapitalize="none"
                             value={emailAddress}
                             placeholder="Email..."
-                            placeholderTextColor="#rgba(255,255,255,0.7)"
+                            placeholderTextColor="#rgba(0,0,0,0.6)" // Slightly lighter dark color for better visibility
                             onChangeText={(email) => setEmailAddress(email)}
                         />
                         <TextInput
                             style={styles.input}
                             value={password}
                             placeholder="Password..."
-                            placeholderTextColor="#rgba(255,255,255,0.7)"
+                            placeholderTextColor="#rgba(0,0,0,0.6)" // Slightly lighter dark color for better visibility
                             secureTextEntry={true}
                             onChangeText={(password) => setPassword(password)}
                         />
@@ -119,7 +123,7 @@ export default function SignUpScreen({ onToggleAuth }: SignUpScreenProps) {
                     </View>
                 )}
             </View>
-        </View>
+        </LinearGradient>
     )
 }
 
@@ -130,21 +134,28 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     formContainer: {
-        backgroundColor: 'rgba(255,255,255,0.15)',
+        backgroundColor: 'rgba(255, 255, 255, 1)', // Changed to white for a more inviting feel
         padding: 20,
         borderRadius: 20,
         backdropFilter: 'blur(10px)',
+        elevation: 5, // For Android shadow
+        shadowColor: '#000', // iOS shadow color
+        shadowOffset: { width: 0, height: 2 }, // iOS shadow offset
+        shadowOpacity: 0.3, // iOS shadow opacity
+        shadowRadius: 4, // iOS shadow radius
     },
     title: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: 'white',
+        fontSize: 22,
+        fontWeight: '500',
+        color: '#34495E',
         textAlign: 'center',
-        marginBottom: 10,
+        marginBottom: 24,
+        letterSpacing: 0.3,
+        lineHeight: 32,
     },
     subtitle: {
         fontSize: 16,
-        color: 'rgba(255,255,255,0.8)',
+        color: '#2C3E50',
         textAlign: 'center',
         marginBottom: 30,
     },
@@ -155,18 +166,26 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         color: 'white',
         fontSize: 16,
+        borderWidth: 1,
+        borderColor: '#BDC3C7',
     },
     button: {
-        backgroundColor: '#FF6B6B',
+        backgroundColor: '#E74C3C',  // Professional yet attention-grabbing red
         padding: 15,
-        borderRadius: 10,
+        borderRadius: 8,
         alignItems: 'center',
         marginTop: 10,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
     },
     buttonText: {
         color: 'white',
-        fontSize: 18,
-        fontWeight: 'bold',
+        fontSize: 16,  // Slightly smaller, more refined text
+        fontWeight: '600',  // Semi-bold instead of bold
+        letterSpacing: 0.5,  // Subtle letter spacing for elegance
     },
     verificationText: {
         color: 'white',

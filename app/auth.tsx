@@ -3,9 +3,11 @@ import { View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import SignInScreen from '@/app/components/SignIn'
 import SignUpScreen from '@/app/components/SignUp'
+import Sell from '@/app/components/Sell'
 
 export default function AuthScreen() {
-    const [isSignIn, setIsSignIn] = React.useState(true)
+    const [isSignIn, setIsSignIn] = React.useState(false)
+    const [showSell, setShowSell] = React.useState(true)
 
     return (
         <LinearGradient
@@ -14,11 +16,12 @@ export default function AuthScreen() {
             end={{ x: 1, y: 1 }}
             style={{ flex: 1 }}
         >
-            {isSignIn ? (
+            {!showSell && (isSignIn ? (
                 <SignInScreen onToggleAuth={() => setIsSignIn(false)} />
             ) : (
                 <SignUpScreen onToggleAuth={() => setIsSignIn(true)} />
-            )}
+            ))}
+            {showSell && <Sell setShowSell={setShowSell} />}
         </LinearGradient>
     )
 } 
