@@ -1,22 +1,16 @@
 import { StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Link } from 'expo-router';
-import { useUser } from '@clerk/clerk-expo';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function HomeScreen() {
-  const { user } = useUser();
-  const firstName = user?.firstName || 'USER';
-  console.log(user);
-
   return (
     <ThemedView style={styles.outerContainer}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <ThemedView style={styles.container}>
           <ThemedView style={styles.welcomeContainer}>
-            <ThemedText style={styles.welcomeText}>Welcome back,</ThemedText>
-            <ThemedText style={styles.userName}>{firstName}!</ThemedText>
+            <ThemedText style={styles.welcomeText}>Welcome back!</ThemedText>
           </ThemedView>
 
           <ThemedView style={styles.mainContent}>
@@ -85,11 +79,6 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 16,
     opacity: 0.8,
-  },
-  userName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FF6B6B',
   },
   mainContent: {
     alignItems: 'center',
