@@ -117,6 +117,5 @@ export const transformFoodItemsToTargets = (
 // Add default export
 export default {
   transformFoodItemsToMeals,
-  transformTargetsToSummary,
   transformFoodItemsToTargets,
 };
