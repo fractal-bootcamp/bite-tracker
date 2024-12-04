@@ -157,14 +157,19 @@ app.post(
     return;
   }
 );
+interface AuthenticatedRequest extends Request {
+  auth?: {
+    userId: string;
+  };
+}
 
 app.get(
   "/user-food-history",
   ClerkExpressRequireAuth(),
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       // The clerk middleware adds the auth property to req
-      const userId = req.auth.userId;
+      const userId = req.auth!.userId;
 
       if (!userId) {
         res.status(401).json({ error: "Unauthorized/user id not provided" });
