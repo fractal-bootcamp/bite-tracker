@@ -3,7 +3,11 @@ import multer from "multer";
 import cors from "cors";
 import Anthropic from "@anthropic-ai/sdk";
 import { Webhook } from "svix";
-import { createUser, getUserImagesAndFood } from "./dbservices";
+import {
+  createUser,
+  getUserImagesAndFood,
+  updateUserTargets,
+} from "./dbservices";
 import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
 
 const app = express();
@@ -157,6 +161,44 @@ app.post(
     return;
   }
 );
+
+app.post(
+  "/update-targets",
+  ClerkExpressRequireAuth(),
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.auth!.userId;
+      const targets = req.body;
+
+      if (!userId) {
+        res.status(401).json({ error: "Unauthorized/user id not provided" });
+        return;
+      }
+
+      if (
+        !targets ||
+        !targets.calories ||
+        !targets.protein ||
+        !targets.carbs ||
+        !targets.fat
+      ) {
+        res.status(400).json({ error: "Invalid targets provided" });
+        return;
+      }
+
+      const updatedUser = await updateUserTargets(userId, targets);
+
+      res.json({
+        success: true,
+        data: updatedUser,
+      });
+    } catch (error) {
+      console.error("Error updating user targets:", error);
+      res.status(500).json({ error: "Failed to update targets" });
+    }
+  }
+);
+
 interface AuthenticatedRequest extends Request {
   auth?: {
     userId: string;

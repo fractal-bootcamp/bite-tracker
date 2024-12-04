@@ -1,4 +1,3 @@
-import { Text } from 'react-native';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -9,7 +8,7 @@ import 'react-native-reanimated';
 import { ClerkProvider, SignedIn, SignedOut, useAuth } from '@clerk/clerk-expo';
 import * as SecureStore from 'expo-secure-store'
 import Onboarding from './components/Onboarding';
-import clearLocalStorage from './devtools';
+
 
 
 import { useColorScheme } from '@/hooks/useColorScheme';

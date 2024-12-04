@@ -4,6 +4,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MotiView } from 'moti';
 import { Easing } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '@clerk/clerk-expo';
+import { updateTargets } from '../client';
+import { MacroTarget } from '../client';
+
+
 
 const saveOnboardingCompleteToLocalStorage = async (isComplete: boolean) => {
     try {
@@ -14,12 +19,7 @@ const saveOnboardingCompleteToLocalStorage = async (isComplete: boolean) => {
     }
 };
 
-interface MacroTarget {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-}
+
 
 const MacroSlider = ({
     label,
@@ -74,7 +74,11 @@ const MacroSlider = ({
     </MotiView>
 );
 
+
 export default function Onboarding({ onboardingComplete, setOnboardingComplete }: { onboardingComplete: boolean, setOnboardingComplete: (value: boolean) => void }) {
+    const { getToken } = useAuth()
+
+
     const [step, setStep] = useState<'welcome' | 'targets'>('welcome');
     const [targets, setTargets] = useState<MacroTarget>({
         calories: 2000,
@@ -148,13 +152,23 @@ export default function Onboarding({ onboardingComplete, setOnboardingComplete }
 
                 <Pressable
                     style={styles.button}
-                    onPress={() => {
-                        // Handle saving targets
-                        console.log('Targets saved:', targets);
+                    onPress={async () => {
+                        try {
+                            getToken().then((token) => {
+                                if (token) {
+                                    updateTargets(token, targets);
 
-
-                        saveOnboardingCompleteToLocalStorage(true);
-                        setOnboardingComplete(true);
+                                }
+                                else {
+                                    console.error('No token');
+                                }
+                            });
+                            saveOnboardingCompleteToLocalStorage(true);
+                            setOnboardingComplete(true);
+                        } catch (error) {
+                            console.error('Failed to save targets:', error);
+                            // You might want to show an error message to the user here
+                        }
                     }}
                 >
                     <Text style={styles.buttonText}>Save Targets</Text>

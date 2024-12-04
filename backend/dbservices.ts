@@ -24,3 +24,25 @@ export async function getUserImagesAndFood(clerkId: string) {
     },
   });
 }
+
+interface MacroTargets {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+export async function updateUserTargets(
+  clerkId: string,
+  targets: MacroTargets
+): Promise<User> {
+  return prisma.user.update({
+    where: { clerkId },
+    data: {
+      calorieTarget: targets.calories,
+      proteinTarget: targets.protein,
+      carbTarget: targets.carbs,
+      fatTarget: targets.fat,
+    },
+  });
+}
