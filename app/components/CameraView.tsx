@@ -1,6 +1,7 @@
 import { CameraView as ExpoCameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, Text, Alert } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 
 interface CameraViewProps {
     onPictureTaken: (uri: string) => void;
@@ -72,6 +73,24 @@ export function CameraView({ onPictureTaken }: CameraViewProps) {
         }
     };
 
+    const pickImage = async () => {
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                quality: 1,
+                allowsEditing: false,
+            });
+
+            if (!result.canceled && result.assets[0]) {
+                await uploadImage(result.assets[0].uri);
+                onPictureTaken(result.assets[0].uri);
+            }
+        } catch (error) {
+            console.error('Error picking image:', error);
+            Alert.alert('Error', 'Failed to pick image');
+        }
+    };
+
     return (
         <View style={styles.container}>
             <ExpoCameraView
@@ -85,6 +104,9 @@ export function CameraView({ onPictureTaken }: CameraViewProps) {
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.button} onPress={takePicture}>
                         <Text style={styles.text}>Take Photo</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress={pickImage}>
+                        <Text style={styles.text}>Gallery</Text>
                     </TouchableOpacity>
                 </View>
             </ExpoCameraView>
