@@ -48,30 +48,24 @@ app.use((req: Request, res: Response, next) => {
 
 const prisma = new PrismaClient();
 
-/**
- * TEMPORARY SOLUTION: Creating temporary users for each upload
- * TODO: Replace with proper auth using Clerk.js
- * Issues: No cleanup for temp users, accumulates in DB
- * See schema.prisma (lines 10-20) for User model structure
- */
 app.post(
   "/upload",
-  async (req: express.Request, res: express.Response): Promise<void> => {
+  ClerkExpressRequireAuth(),
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       console.log("Received upload request");
 
       const { image } = req.body;
+      const userId = req.auth?.userId;
 
-      // Create a temporary user first
-      const tempUser = await prisma.user.create({
-        data: {
-          clerkId: `temp-${Date.now()}`, // Generate a unique temporary clerk ID
-        },
-      });
+      if (!userId) {
+        res.status(401).json({ error: "Unauthorized/user id not provided" });
+        return;
+      }
 
       console.log("Request body:", {
         hasImage: !!image,
-        userId: tempUser.id,
+        userId: userId,
       });
 
       if (!image) {
@@ -91,7 +85,17 @@ app.post(
       const foodData = await analyzeImageWithAnthropic(base64Data);
       console.log("Structured food data:", foodData);
 
-      const savedImage = await saveFoodData(tempUser.id, base64Data, foodData);
+      // Get the user from the database using clerk ID
+      const user = await prisma.user.findUnique({
+        where: { clerkId: userId },
+      });
+
+      if (!user) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+
+      const savedImage = await saveFoodData(user.id, base64Data, foodData);
 
       res.json({
         message: "Image processed and data saved successfully",
