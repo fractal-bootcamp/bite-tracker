@@ -1,10 +1,12 @@
-import { Image, Platform } from 'react-native';
 import React, { useEffect } from 'react';
 import { SafeAreaView, ScrollView, View, Text, StyleSheet } from 'react-native';
 import PieCharts from '@/components/PieCharts';
 import MealItem from '@/components/MealItem';
 import { useAuth } from '@clerk/clerk-expo';
 import { fetchMeals } from '../client';
+import { transformFoodItemsToMeals } from '../services/renderTransforms';
+import { TransformedMeal } from '../services/renderTransforms';
+import { FoodItems } from '../client';
 
 export const nutritionSummary = {
   fat: 65,
@@ -13,71 +15,52 @@ export const nutritionSummary = {
   calories: 1800
 };
 
-export const meals = [
-  {
-    id: 1,
-    date: 'Today',
-    name: 'Grilled Chicken Salad',
-    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-    nutrition: {
-      fat: 15,
-      carbs: 10,
-      protein: 25,
-      calories: 320
-    }
-  },
-  {
-    id: 2,
-    date: 'Today',
-    name: 'Quinoa Bowl',
-    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-    nutrition: {
-      fat: 12,
-      carbs: 45,
-      protein: 15,
-      calories: 380
-    }
-  },
-  {
-    id: 3,
-    date: 'Yesterday',
-    name: 'Salmon with Roasted Vegetables',
-    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-    nutrition: {
-      fat: 22,
-      carbs: 30,
-      protein: 28,
-      calories: 450
-    }
-  },
-  {
-    id: 4,
-    date: 'Yesterday',
-    name: 'Greek Yogurt with Berries',
-    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-    nutrition: {
-      fat: 5,
-      carbs: 25,
-      protein: 15,
-      calories: 200
-    }
-  }
-];
-
-
 export default function TabTwoScreen() {
-  // Inside your component:
-  const { getToken } = useAuth()
+  const { getToken } = useAuth();
+  const [meals, setMeals] = React.useState<TransformedMeal[]>([]);
+  const [targets, setTargets] = React.useState<{ calorieTarget: number, fatTarget: number, carbTarget: number, proteinTarget: number } | null>(null);
+  const [nutritionSummary, setNutritionSummary] = React.useState({
+    fat: 0,
+    carbs: 0,
+    protein: 0,
+    calories: 0,
+  });
+
   useEffect(() => {
-    getToken().then((token) => {
+    getToken().then(async (token) => {
       if (token) {
-        fetchMeals(token);
-      }
-      else {
+        const foodItems = await fetchMeals(token);
+        if (foodItems) {
+          const transformedMeals = transformFoodItemsToMeals(foodItems);
+          setTargets({ calorieTarget: foodItems.calorieTarget, fatTarget: foodItems.fatTarget, carbTarget: foodItems.carbTarget, proteinTarget: foodItems.proteinTarget });
+          setMeals(transformedMeals);
+
+          // Calculate nutrition summary
+          const summary = transformedMeals.reduce((acc: {
+            fat: number;
+            carbs: number;
+            protein: number;
+            calories: number;
+          }, meal: TransformedMeal) => ({
+            fat: acc.fat + meal.nutrition.fat,
+            carbs: acc.carbs + meal.nutrition.carbs,
+            protein: acc.protein + meal.nutrition.protein,
+            calories: acc.calories + meal.nutrition.calories,
+          }), {
+            fat: 0,
+            carbs: 0,
+            protein: 0,
+            calories: 0,
+          });
+
+          setNutritionSummary(summary);
+        }
+      } else {
         console.error('No token');
       }
     });
   }, []);
+
   const groupedMeals = meals.reduce((acc, meal) => {
     if (!acc[meal.date]) {
       acc[meal.date] = [];
@@ -102,7 +85,7 @@ export default function TabTwoScreen() {
               <MealItem
                 key={meal.id}
                 name={meal.name}
-                image={meal.image}
+                // image={meal.image}
                 nutrition={meal.nutrition}
               />
             ))}

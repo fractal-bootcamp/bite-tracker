@@ -1,9 +1,22 @@
+import { FoodItem } from "@prisma/client";
+
 export interface MacroTarget {
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
 }
+export type FoodItems = {
+  fatTarget: number;
+  proteinTarget: number;
+  carbTarget: number;
+  calorieTarget: number;
+  images: {
+    foodItems: FoodItem[];
+    // other Image properties
+  }[];
+  // other User properties
+};
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 if (!API_URL) {
@@ -42,5 +55,7 @@ export const fetchMeals = async (token: string) => {
     },
   });
   const data = await response.json();
-  console.log(data);
+  const foodItems: FoodItems = data["data"];
+  console.log(foodItems);
+  return foodItems;
 };

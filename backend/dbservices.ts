@@ -7,7 +7,21 @@ export async function createUser(clerkId: string): Promise<User> {
   });
 }
 
-export async function getUserImagesAndFood(clerkId: string) {
+type FoodItems = {
+  fatTarget: number | null;
+  proteinTarget: number | null;
+  carbTarget: number | null;
+  calorieTarget: number | null;
+  images: {
+    foodItems: FoodItem[];
+    // other Image properties
+  }[];
+  // other User properties
+} | null;
+
+export async function getUserImagesAndFood(
+  clerkId: string
+): Promise<FoodItems> {
   return prisma.user.findUnique({
     where: {
       clerkId: clerkId,
