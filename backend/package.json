@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
+    "@clerk/clerk-sdk-node": "^5.0.71",
     "@prisma/client": "^6.0.1",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",

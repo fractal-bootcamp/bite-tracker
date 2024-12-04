@@ -6,8 +6,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import { ClerkProvider, SignedIn, SignedOut } from '@clerk/clerk-expo';
+import { ClerkProvider, SignedIn, SignedOut, useAuth } from '@clerk/clerk-expo';
 import * as SecureStore from 'expo-secure-store'
+
 
 
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -58,6 +59,8 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+
+
 
   useEffect(() => {
     if (loaded) {

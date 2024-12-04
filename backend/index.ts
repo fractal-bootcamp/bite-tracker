@@ -6,7 +6,8 @@ import { analyzeImageWithAnthropic } from "./services/anthropicService";
 import { PrismaClient } from "@prisma/client";
 import Anthropic from "@anthropic-ai/sdk";
 import { Webhook } from "svix";
-import { createUser } from "./dbservices";
+import { createUser, getUserImagesAndFood } from "./dbservices";
+import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -17,14 +18,19 @@ const upload = multer({ storage: storage });
 
 app.use((req, res, next) => {
   if (req.originalUrl === "/clerk-webhook") {
+    // makes sure that clerk webhook requests are not parsed as json
+    // this is needed because for svix to verify the request,
+    // the body needs to be the raw request body, not the parsed json
     next();
   } else {
     express.json({ limit: "50mb" })(req, res, next);
   }
 });
 
-// Add CORS middleware
-app.use(cors());
+app.use((req: Request, res: Response, next) => {
+  console.log(`${req.method} ${req.originalUrl} - ${new Date().toISOString()}`);
+  next();
+});
 
 const prisma = new PrismaClient();
 
@@ -132,51 +138,28 @@ app.post(
   }
 );
 
-app.post(
-  "/clerk-webhook",
-  express.raw({ type: "*/*" }),
-  async (req: express.Request, res: express.Response): Promise<void> => {
-    const secret = process.env.CLERK_WEBHOOK_SECRET;
-    if (!secret) {
-      console.error("Missing CLERK_WEBHOOK_SECRET");
-      res.status(500).send("Missing CLERK_WEBHOOK_SECRET");
-      return;
+app.get(
+  "/user-food-history",
+  ClerkExpressRequireAuth(),
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      // The clerk middleware adds the auth property to req
+      const userId = req.auth.userId;
+
+      if (!userId) {
+        res.status(401).json({ error: "Unauthorized/user id not provided" });
+        return;
+      }
+      const userFoodHistory = await getUserImagesAndFood(userId);
+
+      res.json({
+        success: true,
+        data: userFoodHistory,
+      });
+    } catch (error) {
+      console.error("Error fetching user food history:", error);
+      res.status(500).json({ error: "Failed to fetch food history" });
     }
-    //check if svix headers are present and correct
-    //svix is needed to verify the request is from clerk
-    if (
-      typeof req.headers["svix-id"] !== "string" ||
-      typeof req.headers["svix-timestamp"] !== "string" ||
-      typeof req.headers["svix-signature"] !== "string"
-    ) {
-      console.warn("Missing svix headers/wrong types");
-      res.status(400).send("Missing svix headers");
-      return;
-    }
-    const header = {
-      "svix-id": req.headers["svix-id"],
-      "svix-timestamp": req.headers["svix-timestamp"],
-      "svix-signature": req.headers["svix-signature"],
-    };
-    //verify the request is from clerk with svix
-    const wh = new Webhook(secret);
-    const payload = wh.verify(req.body, header);
-    if (!payload) {
-      console.warn("Invalid wh payload");
-      res.status(400).send("Invalid payload");
-      return;
-    }
-    //parse the request body as json
-    const clerkEvent = JSON.parse(req.body.toString());
-    //check if the event is a user.created event
-    if (clerkEvent.type === "user.created") {
-      //haven't tested this if statement yet
-      const clerkId = clerkEvent.data.id;
-      //create the new user in our database
-      await createUser(clerkId);
-    }
-    res.sendStatus(200);
-    return;
   }
 );
 
