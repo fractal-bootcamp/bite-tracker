@@ -2,12 +2,14 @@ import { CameraView as ExpoCameraView, CameraType, useCameraPermissions } from '
 import { useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, Text, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { useAuth } from '@clerk/clerk-expo';
 
 interface CameraViewProps {
     onPictureTaken: (uri: string) => void;
 }
 
 export function CameraView({ onPictureTaken }: CameraViewProps) {
+    const { getToken } = useAuth();
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
     const [cameraRef, setCameraRef] = useState<ExpoCameraView | null>(null);
@@ -50,6 +52,12 @@ export function CameraView({ onPictureTaken }: CameraViewProps) {
 
     const uploadImage = async (uri: string) => {
         try {
+            const token = await getToken();
+            if (!token) {
+                console.error('No authentication token available');
+                return;
+            }
+
             // Convert URI to base64
             const response = await fetch(uri);
             const blob = await response.blob();
@@ -63,6 +71,7 @@ export function CameraView({ onPictureTaken }: CameraViewProps) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     image: base64
