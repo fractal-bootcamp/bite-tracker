@@ -4,16 +4,18 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import { ClerkProvider, SignedIn, SignedOut, useAuth } from '@clerk/clerk-expo';
 import * as SecureStore from 'expo-secure-store'
-
+import Onboarding from './components/Onboarding';
+import clearLocalStorage from './devtools';
 
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import SignUpScreen from './components/SignUp';
 import AuthScreen from './auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -54,12 +56,22 @@ if (!publishableKey) {
 }
 
 
+
 export default function RootLayout() {
+  const [onboardingComplete, setOnboardingComplete] = useState(false);
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
+
+  useEffect(() => {
+    const checkOnboardingComplete = async () => {
+      const value = await AsyncStorage.getItem('@onboarding_complete');
+      setOnboardingComplete(value === 'true');
+    };
+    checkOnboardingComplete();
+  }, []);
 
 
   useEffect(() => {
@@ -74,12 +86,14 @@ export default function RootLayout() {
 
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <SignedIn>
-          <Stack>
+          {!onboardingComplete && <Onboarding onboardingComplete={onboardingComplete} setOnboardingComplete={setOnboardingComplete} />}
+          {onboardingComplete && <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
-          </Stack>
+          </Stack>}
           <StatusBar style="auto" />
         </SignedIn>
         <SignedOut>
