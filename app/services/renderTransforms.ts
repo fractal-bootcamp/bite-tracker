@@ -115,3 +115,10 @@ export const transformFoodItemsToTargets = (
 
   return { values, percentages };
 };
+
+// Add default export
+export default {
+  transformFoodItemsToMeals,
+  transformTargetsToSummary,
+  transformFoodItemsToTargets,
+};
