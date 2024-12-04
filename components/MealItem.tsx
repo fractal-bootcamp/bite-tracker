@@ -3,7 +3,7 @@ import { View, Text, Image, StyleSheet } from 'react-native';
 
 interface MealItemProps {
   name: string;
-  image: string;
+  // image: string;
   nutrition: {
     fat: number;
     carbs: number;
@@ -12,10 +12,10 @@ interface MealItemProps {
   };
 }
 
-const MealItem: React.FC<MealItemProps> = ({ name, image, nutrition }) => {
+const MealItem: React.FC<MealItemProps> = ({ name, nutrition }) => {
   return (
     <View style={styles.container}>
-      <Image source={{ uri: image }} style={styles.image} />
+      {/* <Image source={{ uri: image }} style={styles.image} /> */}
       <View style={styles.content}>
         <Text style={styles.name}>{name}</Text>
         <View style={styles.nutritionBars}>
