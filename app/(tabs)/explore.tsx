@@ -4,7 +4,8 @@ import PieCharts from '@/components/PieCharts';
 import MealItem from '@/components/MealItem';
 import { useAuth } from '@clerk/clerk-expo';
 import { fetchMeals } from '../client';
-import { MealsAndSummary, transformFoodItemstoMealsAndSummary } from '../services/renderTransforms';
+import { MealsAndSummary, transformFoodItemsToTargets, transformFoodItemstoMealsAndSummary } from '../services/renderTransforms';
+import { TransformedMeal } from '../services/renderTransforms';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export interface NutritionSummary {
@@ -23,16 +24,14 @@ export interface NutritionSummary {
 }
 
 export default function TabTwoScreen() {
-  const { getToken, signOut } = useAuth();
+  const { getToken } = useAuth();
   const [meals, setMeals] = React.useState<MealsAndSummary>([]);
   const [targets, setTargets] = React.useState<{ calorieTarget: number, fatTarget: number, carbTarget: number, proteinTarget: number } | null>(null);
   // const [nutritionSummary, setNutritionSummary] = React.useState<NutritionSummary>({
   //   values: { fat: 0, carbs: 0, protein: 0, calories: 0 },
   //   percentages: { fat: 0, carbs: 0, protein: 0, calories: 0 },
   // });
-  useEffect(() => {
-    signOut();
-  }, []);
+
   useEffect(() => {
     getToken().then(async (token) => {
       if (token) {
