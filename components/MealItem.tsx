@@ -2,8 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Svg, Path, Circle } from 'react-native-svg';
 
-const FatIcon = () => (
-  <Svg width="24" height="24" viewBox="0 0 100 100">
+const FatIcon = ({ size = 24 }) => (
+  <Svg width={size} height={size} viewBox="0 0 100 100">
     <Path
       d="M50 5 C80 5, 95 35, 95 65 C95 85, 75 95, 50 95 C25 95, 5 85, 5 65 C5 35, 20 5, 50 5"
       fill="#FFC107"
@@ -20,8 +20,8 @@ const FatIcon = () => (
   </Svg>
 );
 
-const CarbsIcon = () => (
-  <Svg width="24" height="24" viewBox="0 0 100 100">
+const CarbsIcon = ({ size = 24 }) => (
+  <Svg width={size} height={size} viewBox="0 0 100 100">
     <Circle cx="50" cy="50" r="40" fill="#8D6E63" />
     <Path
       d="M30 30 L70 70 M40 25 L75 60 M25 40 L60 75"
@@ -33,8 +33,8 @@ const CarbsIcon = () => (
   </Svg>
 );
 
-const ProteinIcon = () => (
-  <Svg width="24" height="24" viewBox="0 0 100 100">
+const ProteinIcon = ({ size = 24 }) => (
+  <Svg width={size} height={size} viewBox="0 0 100 100">
     <Circle cx="50" cy="50" r="40" fill="#4CAF50" stroke="#2E7D32" strokeWidth="2" />
     <Path
       d="M30 50 Q50 20, 70 50 Q50 80, 30 50"
@@ -48,8 +48,8 @@ const ProteinIcon = () => (
   </Svg>
 );
 
-const CaloriesIcon = () => (
-  <Svg width="24" height="24" viewBox="0 0 100 100">
+const CaloriesIcon = ({ size = 24 }) => (
+  <Svg width={size} height={size} viewBox="0 0 100 100">
     <Path
       d="M50 5 C70 25, 90 45, 90 70 C90 85, 75 95, 50 95 C25 95, 10 85, 10 70 C10 45, 30 25, 50 5"
       fill="#FF5722"
@@ -73,27 +73,32 @@ interface MealItemProps {
 }
 
 const MealItem: React.FC<MealItemProps> = ({ name, nutrition }) => {
+  const getFatSize = () => 24 + (nutrition.fat / 50) * 24;
+  const getCarbsSize = () => 24 + (nutrition.carbs / 100) * 24;
+  const getProteinSize = () => 24 + (nutrition.protein / 50) * 24;
+  const getCaloriesSize = () => 24 + (nutrition.calories / 1000) * 24;
+
   return (
     <View style={styles.container}>
       <Text style={styles.name}>{name}</Text>
       <View style={styles.nutritionContainer}>
         <View style={styles.macroItem}>
-          <FatIcon />
+          <FatIcon size={Math.min(48, getFatSize())} />
           <Text style={styles.macroValue}>{Math.round(nutrition.fat)}g</Text>
         </View>
 
         <View style={styles.macroItem}>
-          <CarbsIcon />
+          <CarbsIcon size={Math.min(48, getCarbsSize())} />
           <Text style={styles.macroValue}>{Math.round(nutrition.carbs)}g</Text>
         </View>
 
         <View style={styles.macroItem}>
-          <ProteinIcon />
+          <ProteinIcon size={Math.min(48, getProteinSize())} />
           <Text style={styles.macroValue}>{Math.round(nutrition.protein)}g</Text>
         </View>
 
         <View style={styles.macroItem}>
-          <CaloriesIcon />
+          <CaloriesIcon size={Math.min(48, getCaloriesSize())} />
           <Text style={styles.macroValue}>{Math.round(nutrition.calories)}</Text>
         </View>
       </View>
@@ -115,17 +120,18 @@ const styles = StyleSheet.create({
   },
   nutritionContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    gap: 20,
-    paddingHorizontal: 2,
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   macroItem: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 8,
   },
   macroValue: {
     fontSize: 14,
     color: '#666',
+    marginLeft: 4,
   },
 });
 
