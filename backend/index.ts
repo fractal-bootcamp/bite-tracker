@@ -193,6 +193,42 @@ app.post(
   }
 );
 
+app.post(
+  "/initialize-user",
+  ClerkExpressRequireAuth(),
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.auth!.userId;
+      if (!userId) {
+        res.status(401).json({ error: "Unauthorized/user id not provided" });
+        return;
+      }
+
+      // Use Prisma to create the user if they don't exist
+      const user = await prisma.user.upsert({
+        where: { clerkId: userId },
+        update: {}, // No updates if user exists
+        create: {
+          clerkId: userId,
+          // Add any default values you want
+          calorieTarget: null,
+          carbTarget: null,
+          fatTarget: null,
+          proteinTarget: null,
+        },
+      });
+
+      res.json({
+        success: true,
+        data: user,
+      });
+    } catch (error) {
+      console.error("Error initializing user:", error);
+      res.status(500).json({ error: "Failed to initialize user" });
+    }
+  }
+);
+
 interface AuthenticatedRequest extends Request {
   auth?: {
     userId: string;

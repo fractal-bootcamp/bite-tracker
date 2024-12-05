@@ -54,7 +54,35 @@ if (!publishableKey) {
   )
 }
 
+// Add this new component to handle user creation
+function InitializeUser() {
+  const { getToken, userId } = useAuth();
 
+  useEffect(() => {
+    const createUser = async () => {
+      try {
+        const token = await getToken();
+        if (token && userId) {
+          // Call your backend to create/initialize user
+          const response = await fetch('http://localhost:3000/initialize-user', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          console.log('User initialization response:', await response.json());
+        }
+      } catch (error) {
+        console.error('Error initializing user:', error);
+      }
+    };
+
+    createUser();
+  }, [userId]);
+
+  return null;
+}
 
 export default function RootLayout() {
   const [onboardingComplete, setOnboardingComplete] = useState(false);
@@ -86,7 +114,7 @@ export default function RootLayout() {
 
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-
+      <InitializeUser />
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <SignedIn>
           {!onboardingComplete && <Onboarding onboardingComplete={onboardingComplete} setOnboardingComplete={setOnboardingComplete} />}

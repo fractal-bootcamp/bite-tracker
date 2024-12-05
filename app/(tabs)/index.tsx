@@ -3,8 +3,19 @@ import { Link } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useAuth } from '@clerk/clerk-expo';
 
 export default function HomeScreen() {
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
     <ThemedView style={styles.outerContainer}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
@@ -53,6 +64,10 @@ export default function HomeScreen() {
               </ThemedView>
             </ThemedView>
           </ThemedView>
+
+          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+            <ThemedText style={styles.signOutButtonText}>Sign Out</ThemedText>
+          </TouchableOpacity>
         </ThemedView>
       </ScrollView>
     </ThemedView>
@@ -157,5 +172,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     opacity: 0.8,
     marginTop: 4,
+  },
+  signOutButton: {
+    marginTop: 20,
+    marginBottom: 40,
+    padding: 15,
+    borderRadius: 10,
+    backgroundColor: '#FF6B6B',
+    alignItems: 'center',
+    alignSelf: 'center',
+    width: '50%',
+  },
+  signOutButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
