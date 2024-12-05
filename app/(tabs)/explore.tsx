@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { SafeAreaView, ScrollView, View, Text, StyleSheet } from 'react-native';
+import { SafeAreaView, ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import PieCharts from '@/components/PieCharts';
 import MealItem from '@/components/MealItem';
 import { useAuth } from '@clerk/clerk-expo';
@@ -90,28 +90,7 @@ export default function TabTwoScreen() {
       console.error('Error getting token:', error);
     });
   }, []);
-  useEffect(() => {
-    console.log("meals         ");
-    if (meals.length > 0 && meals[0].meals.length > 0) {
-      // Get the first meal
-      const firstMeal = meals[0].meals[0];
 
-      // Create an updated version with slightly modified macros
-      const updatedMeal: TransformedMeal = {
-        ...firstMeal,
-        nutrition: {
-          ...firstMeal.nutrition,
-          calories: firstMeal.nutrition.calories + 50,  // Add 50 calories
-          protein: firstMeal.nutrition.protein + 5,     // Add 5g protein
-          carbs: firstMeal.nutrition.carbs + 10,       // Add 10g carbs
-          fat: firstMeal.nutrition.fat + 7,            // Add 2g fat
-        }
-      };
-
-      console.log('Testing updateMeal with:', updatedMeal);
-      updateMeal(updatedMeal);
-    }
-  }, []); // Only run when meals changes
 
   return (
     <SafeAreaView style={styles.container}>
@@ -122,6 +101,7 @@ export default function TabTwoScreen() {
         <Text style={styles.headerTitle}>Macro Dashboard</Text>
       </LinearGradient>
       <ScrollView contentContainerStyle={styles.scrollContent}>
+
         {Object.keys(meals).length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>No meals logged yet</Text>
@@ -167,7 +147,11 @@ export default function TabTwoScreen() {
                   </View>
                 </>
               )}
-              {dateMeals.meals.sort((a, b) => b.originalDate.getTime() - a.originalDate.getTime()).map((meal) => (
+              {dateMeals.meals.sort((a, b) => {
+                const dateComparison = b.originalDate.getTime() - a.originalDate.getTime();
+                if (dateComparison !== 0) return dateComparison;
+                return a.name.localeCompare(b.name);
+              }).map((meal) => (
                 <MealItem
                   key={meal.id}
                   name={meal.name}
