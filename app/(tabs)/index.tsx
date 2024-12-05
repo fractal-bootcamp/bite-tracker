@@ -1,14 +1,136 @@
-import { StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, TouchableOpacity, ScrollView, TextInput, View } from 'react-native';
 import { Link } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useAuth } from '@clerk/clerk-expo';
+import { updateTargets, fetchMeals } from '../client';
 
-export default function HomeScreen() {
-  const { signOut } = useAuth();
+interface Targets {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
 
-  const handleSignOut = async () => {
+interface MealsResponse {
+  calorieTarget: number;
+  proteinTarget: number;
+  carbTarget: number;
+  fatTarget: number;
+}
+
+interface TargetInputProps {
+  label: string;
+  value: number;
+  isEditing: boolean;
+  onChangeText: (value: string) => void;
+}
+
+export default function HomeScreen(): JSX.Element {
+  const { signOut, getToken } = useAuth();
+
+  const [targets, setTargets] = useState<Targets>({
+    calories: 2000,
+    protein: 150,
+    carbs: 250,
+    fat: 65,
+  });
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+
+  useEffect(() => {
+    getToken().then(async (token) => {
+      if (token) {
+        try {
+          const foodItems: MealsResponse = await fetchMeals(token);
+          if (foodItems) {
+            setTargets({
+              calories: foodItems.calorieTarget,
+              protein: foodItems.proteinTarget,
+              carbs: foodItems.carbTarget,
+              fat: foodItems.fatTarget,
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching targets:', error);
+        }
+      }
+    });
+  }, [getToken]);
+
+  const handleSaveTargets = async (): Promise<void> => {
+    try {
+      const token = await getToken();
+      if (token) {
+        await updateTargets(token, targets);
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error('Error saving targets:', error);
+    }
+  };
+
+  const TargetInput: React.FC<TargetInputProps> = ({ label, value, isEditing, onChangeText }) => (
+    <ThemedView style={styles.targetItem}>
+      <ThemedText style={styles.targetLabel}>{label}</ThemedText>
+      {isEditing ? (
+        <TextInput
+          style={styles.targetInput}
+          value={value.toString()}
+          onChangeText={onChangeText}
+          keyboardType="numeric"
+        />
+      ) : (
+        <ThemedText style={styles.targetValue}>{value}</ThemedText>
+      )}
+    </ThemedView>
+  );
+
+  const renderTargetsSection = (): JSX.Element => (
+    <ThemedView style={styles.statsContainer}>
+      <View style={styles.titleRow}>
+        <ThemedText style={styles.statsTitle}>Daily Targets</ThemedText>
+        {!isEditing ? (
+          <TouchableOpacity onPress={() => setIsEditing(true)}>
+            <ThemedText style={styles.editButton}>Edit</ThemedText>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity onPress={handleSaveTargets}>
+            <ThemedText style={styles.saveButton}>Save</ThemedText>
+          </TouchableOpacity>
+        )}
+      </View>
+      <ThemedView style={styles.statsGrid}>
+        <TargetInput
+          label="Calories"
+          value={targets.calories}
+          isEditing={isEditing}
+          onChangeText={(value) => setTargets((prev) => ({ ...prev, calories: parseInt(value, 10) || 0 }))}
+        />
+        <TargetInput
+          label="Protein (g)"
+          value={targets.protein}
+          isEditing={isEditing}
+          onChangeText={(value) => setTargets((prev) => ({ ...prev, protein: parseInt(value, 10) || 0 }))}
+        />
+        <TargetInput
+          label="Carbs (g)"
+          value={targets.carbs}
+          isEditing={isEditing}
+          onChangeText={(value) => setTargets((prev) => ({ ...prev, carbs: parseInt(value, 10) || 0 }))}
+        />
+        <TargetInput
+          label="Fat (g)"
+          value={targets.fat}
+          isEditing={isEditing}
+          onChangeText={(value) => setTargets((prev) => ({ ...prev, fat: parseInt(value, 10) || 0 }))}
+        />
+      </ThemedView>
+    </ThemedView>
+  );
+
+  const handleSignOut = async (): Promise<void> => {
     try {
       await signOut();
     } catch (error) {
@@ -47,23 +169,7 @@ export default function HomeScreen() {
             </Link>
           </ThemedView>
 
-          <ThemedView style={styles.statsContainer}>
-            <ThemedText style={styles.statsTitle}>Today's Summary</ThemedText>
-            <ThemedView style={styles.statsGrid}>
-              <ThemedView style={styles.statItem}>
-                <ThemedText style={styles.statNumber}>0</ThemedText>
-                <ThemedText style={styles.statLabel}>Meals</ThemedText>
-              </ThemedView>
-              <ThemedView style={styles.statItem}>
-                <ThemedText style={styles.statNumber}>0</ThemedText>
-                <ThemedText style={styles.statLabel}>Calories</ThemedText>
-              </ThemedView>
-              <ThemedView style={styles.statItem}>
-                <ThemedText style={styles.statNumber}>0g</ThemedText>
-                <ThemedText style={styles.statLabel}>Protein</ThemedText>
-              </ThemedView>
-            </ThemedView>
-          </ThemedView>
+          {renderTargetsSection()}
 
           <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
             <ThemedText style={styles.signOutButtonText}>Sign Out</ThemedText>
@@ -158,7 +264,9 @@ const styles = StyleSheet.create({
   },
   statsGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
   },
   statItem: {
     alignItems: 'center',
@@ -185,6 +293,47 @@ const styles = StyleSheet.create({
   },
   signOutButtonText: {
     color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  targetItem: {
+    alignItems: 'center',
+    marginVertical: 8,
+    width: '45%',
+  },
+  targetLabel: {
+    fontSize: 14,
+    opacity: 0.8,
+    marginBottom: 4,
+  },
+  targetValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#4ECDC4',
+  },
+  targetInput: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#4ECDC4',
+    borderBottomWidth: 1,
+    borderBottomColor: '#4ECDC4',
+    paddingVertical: 2,
+    textAlign: 'center',
+    minWidth: 80,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  editButton: {
+    color: '#4ECDC4',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  saveButton: {
+    color: '#FF6B6B',
     fontSize: 16,
     fontWeight: '600',
   },
