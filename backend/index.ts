@@ -11,7 +11,7 @@ import {
   getUserImagesAndFood,
   updateUserTargets,
 } from "./dbservices";
-import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
+import { requireAuth } from "@clerk/express";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -50,7 +50,7 @@ const prisma = new PrismaClient();
 
 app.post(
   "/upload",
-  ClerkExpressRequireAuth(),
+  requireAuth(),
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       console.log("Received upload request");
@@ -158,7 +158,7 @@ app.post(
 
 app.post(
   "/update-targets",
-  ClerkExpressRequireAuth(),
+  requireAuth(),
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.auth!.userId;
@@ -201,7 +201,7 @@ interface AuthenticatedRequest extends Request {
 
 app.get(
   "/user-food-history",
-  ClerkExpressRequireAuth(),
+  requireAuth(),
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       // The clerk middleware adds the auth property to req

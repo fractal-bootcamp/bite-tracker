@@ -6,12 +6,12 @@ async function seed() {
   const user =
     (await prisma.user.findUnique({
       where: {
-        clerkId: "user_2pgKxjNaP0WMjeBSygEFhghgrA2",
+        clerkId: "user_2po4VCbt5K1jeeXMey1jIqXe02f",
       },
     })) ??
     (await prisma.user.create({
       data: {
-        clerkId: "user_2pgKxjNaP0WMjeBSygEFhghgrA2",
+        clerkId: "user_2po4VCbt5K1jeeXMey1jIqXe02f",
       },
     }));
   console.log("User created");
