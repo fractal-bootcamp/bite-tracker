@@ -6,6 +6,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useAuth } from '@clerk/clerk-expo';
 import { updateTargets, fetchMeals } from '../client';
+import { showToast } from '../utils/toast';
 
 interface Targets {
   calories: number;
@@ -65,9 +66,11 @@ export default function HomeScreen(): JSX.Element {
       if (token) {
         await updateTargets(token, targets);
         setIsEditing(false);
+        showToast.success('Targets updated successfully');
       }
     } catch (error) {
       console.error('Error saving targets:', error);
+      showToast.error('Failed to update targets');
     }
   };
 
