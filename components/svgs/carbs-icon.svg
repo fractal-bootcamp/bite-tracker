@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Grain shape -->
+  <circle cx="50" cy="50" r="40" fill="#8D6E63"/>
+  <!-- Wheat details -->
+  <path d="M30 30 L70 70 M40 25 L75 60 M25 40 L60 75" 
+        stroke="#D7CCC8" 
+        stroke-width="6" 
+        stroke-linecap="round"/>
+  <circle cx="50" cy="50" r="15" fill="#D7CCC8"/>
+</svg>
