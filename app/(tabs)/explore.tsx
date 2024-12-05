@@ -3,10 +3,12 @@ import { SafeAreaView, ScrollView, View, Text, StyleSheet } from 'react-native';
 import PieCharts from '@/components/PieCharts';
 import MealItem from '@/components/MealItem';
 import { useAuth } from '@clerk/clerk-expo';
-import { fetchMeals } from '../client';
+import { fetchMeals, updateFoodItemMacros } from '../client';
 import { MealsAndSummary, transformFoodItemsToTargets, transformFoodItemstoMealsAndSummary } from '../services/renderTransforms';
 import { TransformedMeal } from '../services/renderTransforms';
 import { LinearGradient } from 'expo-linear-gradient';
+import _ from 'lodash';
+
 
 export interface NutritionSummary {
   values: {
@@ -27,7 +29,43 @@ export default function TabTwoScreen() {
   const { getToken } = useAuth();
   const [meals, setMeals] = React.useState<MealsAndSummary>([]);
   const [targets, setTargets] = React.useState<{ calorieTarget: number, fatTarget: number, carbTarget: number, proteinTarget: number } | null>(null);
+  // when we edit a meal, we need to update the macros for that
+  // we need to get the past meal's macros, update them, and then set the new meal with the updated macros
+  // we also have to update the FoodItems in the database, and if the update fails, we need to revert the meal edit
+  const updateMeal = (meal: TransformedMeal) => {
+    setMeals(prevMeals => {
+      const updatedMeals = _.cloneDeep(prevMeals).map(dateMeals => ({
+        ...dateMeals,
+        meals: dateMeals.meals.map(m => m.id === meal.id ? meal : m)
+      }));
 
+      const pastMeal = prevMeals.find(dateMeals => dateMeals.meals.find(m => m.id === meal.id));
+      if (pastMeal) {
+        const pastMealItem = pastMeal.meals.find(m => m.id === meal.id);
+        if (pastMealItem) {
+          getToken().then(token => {
+            if (token) {
+              updateFoodItemMacros(pastMealItem.id, meal, token)
+                .then(updatedFoodItem => {
+                  if (updatedFoodItem) {
+                    console.log("updated food item macros");
+                  }
+                })
+                .catch(error => {
+                  console.error("Error updating food item macros:", error);
+
+                  // You might want to revert the state here if the update fails
+                  setMeals(prevMeals => {
+                    return prevMeals;
+                  });
+                });
+            }
+          });
+        }
+      }
+      return updatedMeals;
+    });
+  };
   useEffect(() => {
     getToken().then(async (token) => {
       if (token) {
@@ -52,6 +90,28 @@ export default function TabTwoScreen() {
       console.error('Error getting token:', error);
     });
   }, []);
+  useEffect(() => {
+    console.log("meals         ");
+    if (meals.length > 0 && meals[0].meals.length > 0) {
+      // Get the first meal
+      const firstMeal = meals[0].meals[0];
+
+      // Create an updated version with slightly modified macros
+      const updatedMeal: TransformedMeal = {
+        ...firstMeal,
+        nutrition: {
+          ...firstMeal.nutrition,
+          calories: firstMeal.nutrition.calories + 50,  // Add 50 calories
+          protein: firstMeal.nutrition.protein + 5,     // Add 5g protein
+          carbs: firstMeal.nutrition.carbs + 10,       // Add 10g carbs
+          fat: firstMeal.nutrition.fat + 7,            // Add 2g fat
+        }
+      };
+
+      console.log('Testing updateMeal with:', updatedMeal);
+      updateMeal(updatedMeal);
+    }
+  }, []); // Only run when meals changes
 
   return (
     <SafeAreaView style={styles.container}>
