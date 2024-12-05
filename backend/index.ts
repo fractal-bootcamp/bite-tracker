@@ -195,7 +195,7 @@ app.post(
 
 app.post(
   "/initialize-user",
-  ClerkExpressRequireAuth(),
+  requireAuth(),
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.auth!.userId;
