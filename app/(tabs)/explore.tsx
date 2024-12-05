@@ -167,7 +167,7 @@ export default function TabTwoScreen() {
                   </View>
                 </>
               )}
-              {dateMeals.meals.map((meal) => (
+              {dateMeals.meals.sort((a, b) => b.originalDate.getTime() - a.originalDate.getTime()).map((meal) => (
                 <MealItem
                   key={meal.id}
                   name={meal.name}
