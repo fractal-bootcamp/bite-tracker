@@ -24,6 +24,8 @@
     "ts-node": "^10.9.2"
   },
   "scripts": {
-    "seed": "bun run seed.ts"
+    "seed": "bun run seed.ts",
+    "build": "npx tsc",
+    "start": "node dist/server.js"
   }
 }
