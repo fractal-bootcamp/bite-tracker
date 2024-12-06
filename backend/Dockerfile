@@ -9,6 +9,7 @@ COPY package.json bun.lockb ./
 RUN bun install
 
 RUN echo "=== Node Modules ==="
+RUN echo $(ls -la) || true
 RUN echo $(ls -la node_modules) || true
 RUN echo $(ls -la node_modules/.prisma) || true
 
