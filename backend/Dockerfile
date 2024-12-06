@@ -62,7 +62,7 @@ COPY . .
 RUN npm run build
 
 # Add module-alias import to the built index.js
-RUN sed -i '1i require("module-alias/register");' dist/index.js
+# RUN sed -i '1i require("module-alias/register");' dist/index.js
 
 # Expose the port your app runs on
 EXPOSE 4000
