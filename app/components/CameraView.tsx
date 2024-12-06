@@ -4,6 +4,7 @@ import { StyleSheet, View, TouchableOpacity, Text, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@clerk/clerk-expo';
 import { CameraGrid } from './CameraGrid';
+import Toast from 'react-native-toast-message';
 
 interface CameraViewProps {
     onPictureTaken: (uri: string) => void;
@@ -59,17 +60,16 @@ export function CameraView({ onPictureTaken }: CameraViewProps) {
                 console.error('No authentication token available');
                 return;
             }
-
             // Convert URI to base64
-            const response = await fetch(uri);
-            const blob = await response.blob();
+            const imageResponse = await fetch(uri);
+            const blob = await imageResponse.blob();
             const base64 = await new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onloadend = () => resolve(reader.result);
                 reader.readAsDataURL(blob);
             });
 
-            await fetch('http://localhost:3000/upload', {
+            const response = await fetch('http://localhost:3000/upload', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -79,8 +79,30 @@ export function CameraView({ onPictureTaken }: CameraViewProps) {
                     image: base64
                 }),
             });
+
+            if (response.ok) {
+                Toast.show({
+                    type: 'success',
+                    text1: 'Success',
+                    text2: 'Image uploaded successfully',
+                    position: 'top'
+                });
+            } else {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Error',
+                    text2: 'Failed to upload image',
+                    position: 'top'
+                });
+            }
         } catch (error) {
             console.error('Upload error:', error);
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: 'Failed to upload image',
+                position: 'bottom'
+            });
         }
     };
 
