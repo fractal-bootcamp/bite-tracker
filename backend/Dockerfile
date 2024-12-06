@@ -1,36 +1,3 @@
-# FROM oven/bun:1.0.15
-
-# WORKDIR /app
-
-# # Copy package files
-# COPY package.json bun.lockb ./
-
-# # Install dependencies
-# RUN bun install
-
-
-
-# # Copy schema.prisma and generate client
-# COPY schema.prisma ./
-# COPY migrations ./migrations
-
-# # Generate Prisma client using direct path
-# RUN bunx prisma generate
-
-# # Copy the rest of the backend application
-# COPY . .
-
-# # Expose the port your app runs on
-# EXPOSE 3000
-# RUN echo "=== Node Modules ==="
-
-# RUN echo $(ls -la) || true
-# RUN echo $(ls -la node_modules/.prisma) || true
-# RUN echo $(ls -la node_modules/.prisma/client) || true
-
-# # Start the application
-# CMD ./node_modules/.bin/prisma generate && bun run index.ts 
-# Use Node.js LTS (Long Term Support) version
 FROM node:20-slim
 
 # Set working directory
@@ -42,14 +9,22 @@ RUN apt-get update -y && apt-get install -y openssl
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install dependencies including TypeScript
 RUN npm install
-
+RUN npm install -g typescript
 RUN npm install module-alias
+
+# Show installed packages
+RUN echo "=== Installed packages ===" && \
+    npm list || true
+
+# Copy TypeScript config
+COPY tsconfig.json ./
+RUN echo "=== TypeScript Config ===" && \
+    cat tsconfig.json
 
 # Copy prisma schema
 COPY migrations ./migrations
-
 COPY schema.prisma ./
 
 # Generate Prisma client
@@ -58,16 +33,21 @@ RUN npx prisma generate
 # Copy the rest of the application
 COPY . .
 
-# Build the application
-RUN npm run build
+# Show directory contents before build
+RUN echo "=== Directory contents before build ===" && \
+    ls -la
 
-# Add module-alias import to the built index.js
-# RUN sed -i '1i require("module-alias/register");' dist/index.js
+# Try to build with verbose output
+RUN echo "=== Starting TypeScript build ===" && \
+    tsc --version && \
+    tsc --outDir dist && \
+    echo "=== Directory contents after build ===" && \
+    ls -la dist || true
 
 # Expose the port your app runs on
 EXPOSE 4000
 
 RUN echo "Starting server docker"
-RUN echo $(ls -la)
+
 # Command to run migrations and start the server
 CMD npx prisma migrate deploy && npx prisma generate && npm start
