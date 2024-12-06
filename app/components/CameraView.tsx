@@ -1,6 +1,6 @@
 import { CameraView as ExpoCameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text, Alert } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, Alert, Image, Modal, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@clerk/clerk-expo';
 import { CameraGrid } from './CameraGrid';
@@ -16,6 +16,8 @@ export function CameraView({ onPictureTaken }: CameraViewProps) {
     const [permission, requestPermission] = useCameraPermissions();
     const [cameraRef, setCameraRef] = useState<ExpoCameraView | null>(null);
     const [showGrid, setShowGrid] = useState(false);
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     if (!permission) {
         return <View />;
@@ -43,8 +45,7 @@ export function CameraView({ onPictureTaken }: CameraViewProps) {
                     shutterSound: false
                 });
                 if (photo) {
-                    await uploadImage(photo.uri);
-                    onPictureTaken(photo.uri);
+                    setPreviewImage(photo.uri);
                 }
             } catch (error) {
                 console.error('Error taking picture:', error);
@@ -115,14 +116,59 @@ export function CameraView({ onPictureTaken }: CameraViewProps) {
             });
 
             if (!result.canceled && result.assets[0]) {
-                await uploadImage(result.assets[0].uri);
-                onPictureTaken(result.assets[0].uri);
+                setPreviewImage(result.assets[0].uri);
             }
         } catch (error) {
             console.error('Error picking image:', error);
             Alert.alert('Error', 'Failed to pick image');
         }
     };
+
+    const confirmUpload = async () => {
+        if (!previewImage) return;
+
+        setIsUploading(true);
+        try {
+            await uploadImage(previewImage);
+            onPictureTaken(previewImage);
+            setPreviewImage(null);
+        } catch (error) {
+            console.error('Error uploading:', error);
+            Alert.alert('Error', 'Failed to upload image');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    if (previewImage) {
+        return (
+            <View style={styles.container}>
+                <Image source={{ uri: previewImage }} style={styles.preview} />
+                {isUploading && (
+                    <View style={styles.loadingOverlay}>
+                        <ActivityIndicator size="large" color="#ffffff" />
+                        <Text style={styles.loadingText}>Uploading...</Text>
+                    </View>
+                )}
+                <View style={styles.previewButtons}>
+                    <TouchableOpacity
+                        style={[styles.button, styles.previewButton]}
+                        onPress={() => setPreviewImage(null)}
+                        disabled={isUploading}
+                    >
+                        <Text style={styles.text}>Retake</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.button, styles.previewButton]}
+                        onPress={confirmUpload}
+                        disabled={isUploading}
+                    >
+                        <Text style={styles.text}>Upload</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -181,5 +227,35 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         color: 'white',
+    },
+    preview: {
+        flex: 1,
+        width: '100%',
+    },
+    previewButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        padding: 20,
+        backgroundColor: 'black',
+    },
+    previewButton: {
+        width: 120,
+        marginHorizontal: 10,
+    },
+    loadingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: 'white',
+        marginTop: 10,
     },
 });
