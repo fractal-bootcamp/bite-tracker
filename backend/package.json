@@ -26,6 +26,6 @@
   "scripts": {
     "seed": "bun run seed.ts",
     "build": "npx tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/index.js"
   }
 }
