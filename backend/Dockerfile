@@ -8,8 +8,10 @@ COPY package.json bun.lockb ./
 # Install dependencies
 RUN bun install
 
-# Copy Prisma schema and generate client
-COPY prisma ./prisma
+# Copy schema.prisma first (it's in the root of backend, not in a prisma directory)
+COPY schema.prisma ./
+
+# Generate Prisma client
 RUN bunx prisma generate
 
 # Copy the rest of the backend application
