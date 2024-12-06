@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
-import { SafeAreaView, ScrollView, View, Text, StyleSheet } from 'react-native';
+import { SafeAreaView, ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import PieCharts from '@/components/PieCharts';
 import MealItem from '@/components/MealItem';
 import { useAuth } from '@clerk/clerk-expo';
-import { fetchMeals } from '../client';
+import { fetchMeals, updateFoodItemMacros } from '../client';
 import { MealsAndSummary, transformFoodItemsToTargets, transformFoodItemstoMealsAndSummary } from '../services/renderTransforms';
 import { TransformedMeal } from '../services/renderTransforms';
 import { LinearGradient } from 'expo-linear-gradient';
+import _ from 'lodash';
+
 
 export interface NutritionSummary {
   values: {
@@ -27,7 +29,44 @@ export default function TabTwoScreen() {
   const { getToken } = useAuth();
   const [meals, setMeals] = React.useState<MealsAndSummary>([]);
   const [targets, setTargets] = React.useState<{ calorieTarget: number, fatTarget: number, carbTarget: number, proteinTarget: number } | null>(null);
+  // when we edit a meal, we need to update the macros for that
+  // we need to get the past meal's macros, update them, and then set the new meal with the updated macros
+  // we also have to update the FoodItems in the database, and if the update fails, we need to revert the meal edit
+  const updateMeal = (meal: TransformedMeal) => {
+    const newMeal = _.cloneDeep(meal);
+    setMeals(prevMeals => {
+      const updatedMeals = _.cloneDeep(prevMeals).map(dateMeals => ({
+        ...dateMeals,
+        meals: dateMeals.meals.map(m => m.id === meal.id ? newMeal : m)
+      }));
 
+      const pastMeal = prevMeals.find(dateMeals => dateMeals.meals.find(m => m.id === newMeal.id));
+      if (pastMeal) {
+        const pastMealItem = pastMeal.meals.find(m => m.id === newMeal.id);
+        if (pastMealItem) {
+          getToken().then(token => {
+            if (token) {
+              updateFoodItemMacros(pastMealItem.id, newMeal, token)
+                .then(updatedFoodItem => {
+                  if (updatedFoodItem) {
+                    console.log("updated food item macros");
+                  }
+                })
+                .catch(error => {
+                  console.error("Error updating food item macros:", error);
+
+                  // You might want to revert the state here if the update fails
+                  setMeals(prevMeals => {
+                    return prevMeals;
+                  });
+                });
+            }
+          });
+        }
+      }
+      return updatedMeals;
+    });
+  };
   useEffect(() => {
     getToken().then(async (token) => {
       if (token) {
@@ -53,6 +92,8 @@ export default function TabTwoScreen() {
     });
   }, []);
 
+
+
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
@@ -62,6 +103,7 @@ export default function TabTwoScreen() {
         <Text style={styles.headerTitle}>Macro Dashboard</Text>
       </LinearGradient>
       <ScrollView contentContainerStyle={styles.scrollContent}>
+
         {Object.keys(meals).length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>No meals logged yet</Text>
@@ -107,12 +149,15 @@ export default function TabTwoScreen() {
                   </View>
                 </>
               )}
-              {dateMeals.meals.map((meal) => (
+              {dateMeals.meals.sort((a, b) => {
+                const dateComparison = b.originalDate.getTime() - a.originalDate.getTime();
+                if (dateComparison !== 0) return dateComparison;
+                return a.name.localeCompare(b.name);
+              }).map((meal) => (
                 <MealItem
                   key={meal.id}
-                  name={meal.name}
-                  // image={meal.image}
-                  nutrition={meal.nutrition}
+                  meal={meal}
+                  onUpdate={updateMeal}
                 />
               ))}
             </View>

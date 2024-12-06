@@ -4,6 +4,7 @@ import { formatDate } from "../utils/dates";
 export interface TransformedMeal {
   id: string;
   date: string;
+  originalDate: Date;
   name: string;
   nutrition: {
     fat: number;
@@ -51,6 +52,7 @@ const transformFoodItemsToMeals = (foodItems: FoodItems): TransformedMeal[] => {
     return image.foodItems.map((foodItem) => ({
       id: foodItem.id, // You might want to use a more unique ID
       date: formatDate(new Date(foodItem.createdAt)),
+      originalDate: new Date(foodItem.createdAt),
       name: foodItem.name,
       nutrition: {
         fat: foodItem.fat || 0,

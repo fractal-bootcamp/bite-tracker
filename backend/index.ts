@@ -11,7 +11,7 @@ import {
   getUserImagesAndFood,
   updateUserTargets,
 } from "./dbservices";
-import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
+import { requireAuth } from "@clerk/express";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -50,7 +50,7 @@ const prisma = new PrismaClient();
 
 app.post(
   "/upload",
-  ClerkExpressRequireAuth(),
+  requireAuth(),
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       console.log("Received upload request");
@@ -158,7 +158,7 @@ app.post(
 
 app.post(
   "/update-targets",
-  ClerkExpressRequireAuth(),
+  requireAuth(),
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.auth!.userId;
@@ -195,7 +195,7 @@ app.post(
 
 app.post(
   "/initialize-user",
-  ClerkExpressRequireAuth(),
+  requireAuth(),
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.auth!.userId;
@@ -229,6 +229,53 @@ app.post(
   }
 );
 
+app.put(
+  "/update-food-item/:id",
+  requireAuth(),
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const foodItemId = req.params.id;
+      const { nutrition } = req.body;
+      const userId = req.auth!.userId;
+
+      // Check if the food item belongs to the user through the image relationship
+      const foodItem = await prisma.foodItem.findUnique({
+        where: { id: foodItemId },
+        include: {
+          image: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      });
+
+      if (!foodItem || foodItem.image.user.clerkId !== userId) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+
+      const updatedFoodItem = await prisma.foodItem.update({
+        where: { id: foodItemId },
+        data: {
+          calories: nutrition.calories,
+          fat: nutrition.fat,
+          carbs: nutrition.carbs,
+          protein: nutrition.protein,
+        },
+      });
+
+      res.json({
+        success: true,
+        data: updatedFoodItem,
+      });
+    } catch (error) {
+      console.error("Error updating food item:", error);
+      res.status(500).json({ error: "Failed to update food item" });
+    }
+  }
+);
+
 interface AuthenticatedRequest extends Request {
   auth?: {
     userId: string;
@@ -237,7 +284,7 @@ interface AuthenticatedRequest extends Request {
 
 app.get(
   "/user-food-history",
-  ClerkExpressRequireAuth(),
+  requireAuth(),
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       // The clerk middleware adds the auth property to req

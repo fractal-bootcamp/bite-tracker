@@ -1,4 +1,5 @@
 import { FoodItem } from "@prisma/client";
+import { TransformedMeal } from "./services/renderTransforms";
 
 export interface MacroTarget {
   calories: number;
@@ -59,7 +60,39 @@ export const fetchMeals = async (token: string) => {
   return foodItems;
 };
 
+export const updateFoodItemMacros = async (
+  foodItemId: string,
+  meal: TransformedMeal,
+  token: string
+) => {
+  try {
+    const response = await fetch(`${API_URL}/update-food-item/${foodItemId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        nutrition: meal.nutrition,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error("Server response:", errorData);
+      throw new Error(`Failed to update food item: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error("Error updating food item:", error);
+    throw error;
+  }
+};
+
 export default {
   updateTargets,
   fetchMeals,
+  updateFoodItemMacros,
 };

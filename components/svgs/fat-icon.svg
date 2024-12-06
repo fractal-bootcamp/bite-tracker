@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Drop shape -->
+  <path d="M50 5 C80 5, 95 35, 95 65 C95 85, 75 95, 50 95 C25 95, 5 85, 5 65 C5 35, 20 5, 50 5" 
+        fill="#FFC107" 
+        stroke="#FFA000" 
+        stroke-width="2"/>
+  <!-- Inner highlight -->
+  <path d="M35 25 C45 15, 60 25, 65 40" 
+        fill="none" 
+        stroke="#FFE082" 
+        stroke-width="3" 
+        stroke-linecap="round"/>
+</svg>

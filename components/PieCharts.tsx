@@ -28,10 +28,10 @@ const PieCharts: React.FC<PieChartsProps> = ({ fat, carbs, protein, calories }) 
 
   return (
     <View style={styles.container}>
+      {renderPieChart(calories, '#FF8C42', 'Calories')}
       {renderPieChart(fat, '#FF6B6B', 'Fat')}
       {renderPieChart(carbs, '#4ECDC4', 'Carbs')}
       {renderPieChart(protein, '#45B7D1', 'Protein')}
-      {renderPieChart(calories, '#FF8C42', 'Calories')}
     </View>
   );
 };

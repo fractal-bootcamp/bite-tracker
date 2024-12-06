@@ -87,6 +87,7 @@ function InitializeUser() {
 
 export default function RootLayout() {
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+  console.log("onboardingComplete", onboardingComplete)
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
