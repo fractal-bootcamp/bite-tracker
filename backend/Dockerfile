@@ -67,5 +67,7 @@ RUN npm run build
 # Expose the port your app runs on
 EXPOSE 4000
 
+RUN echo "Starting server docker"
+RUN echo $(ls -la)
 # Command to run migrations and start the server
 CMD npx prisma migrate deploy && npx prisma generate && npm start
