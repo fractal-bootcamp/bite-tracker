@@ -33,19 +33,20 @@ export default function TabTwoScreen() {
   // we need to get the past meal's macros, update them, and then set the new meal with the updated macros
   // we also have to update the FoodItems in the database, and if the update fails, we need to revert the meal edit
   const updateMeal = (meal: TransformedMeal) => {
+    const newMeal = _.cloneDeep(meal);
     setMeals(prevMeals => {
       const updatedMeals = _.cloneDeep(prevMeals).map(dateMeals => ({
         ...dateMeals,
-        meals: dateMeals.meals.map(m => m.id === meal.id ? meal : m)
+        meals: dateMeals.meals.map(m => m.id === meal.id ? newMeal : m)
       }));
 
-      const pastMeal = prevMeals.find(dateMeals => dateMeals.meals.find(m => m.id === meal.id));
+      const pastMeal = prevMeals.find(dateMeals => dateMeals.meals.find(m => m.id === newMeal.id));
       if (pastMeal) {
-        const pastMealItem = pastMeal.meals.find(m => m.id === meal.id);
+        const pastMealItem = pastMeal.meals.find(m => m.id === newMeal.id);
         if (pastMealItem) {
           getToken().then(token => {
             if (token) {
-              updateFoodItemMacros(pastMealItem.id, meal, token)
+              updateFoodItemMacros(pastMealItem.id, newMeal, token)
                 .then(updatedFoodItem => {
                   if (updatedFoodItem) {
                     console.log("updated food item macros");
@@ -90,6 +91,27 @@ export default function TabTwoScreen() {
       console.error('Error getting token:', error);
     });
   }, []);
+  const testUpdateMeal = () => {
+    if (meals.length > 0 && meals[0].meals.length > 0) {
+      // Get the first meal
+      const firstMeal = meals[0].meals[0];
+      console.log("firstMeal  ", firstMeal.name, firstMeal.originalDate);
+      // Create an updated version with slightly modified macros
+      const updatedMeal: TransformedMeal = {
+        ...firstMeal,
+        nutrition: {
+          ...firstMeal.nutrition,
+          calories: firstMeal.nutrition.calories + 50,  // Add 50 calories
+          protein: firstMeal.nutrition.protein + 5,     // Add 5g protein
+          carbs: firstMeal.nutrition.carbs + 10,       // Add 10g carbs
+          fat: firstMeal.nutrition.fat + 7,            // Add 2g fat
+        }
+      };
+
+      console.log('Testing updateMeal with:', updatedMeal);
+      updateMeal(updatedMeal);
+    }
+  };
 
 
   return (
@@ -101,7 +123,9 @@ export default function TabTwoScreen() {
         <Text style={styles.headerTitle}>Macro Dashboard</Text>
       </LinearGradient>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-
+        <TouchableOpacity style={styles.testButton} onPress={testUpdateMeal}>
+          <Text style={styles.testButtonText}>Test Update Meal</Text>
+        </TouchableOpacity>
         {Object.keys(meals).length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>No meals logged yet</Text>
@@ -154,9 +178,8 @@ export default function TabTwoScreen() {
               }).map((meal) => (
                 <MealItem
                   key={meal.id}
-                  name={meal.name}
-                  // image={meal.image}
-                  nutrition={meal.nutrition}
+                  meal={meal}
+                  onUpdate={updateMeal}
                 />
               ))}
             </View>
