@@ -13,6 +13,7 @@ import {
 } from "./dbservices";
 import { requireAuth } from "@clerk/express";
 
+console.log("Initializing Express");
 const app = express();
 const port = process.env.PORT || 3000;
 
