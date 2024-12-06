@@ -22,7 +22,7 @@ COPY migrations ./migrations
 # Generate Prisma client with explicit output
 # ENV PRISMA_GENERATE_DATAPROXY=false
 # RUN mkdir -p /app/node_modules/.prisma/client
-RUN bunx prisma generate
+RUN npx prisma generate
 
 
 # Copy the rest of the backend application
