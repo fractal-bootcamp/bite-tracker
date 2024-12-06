@@ -91,27 +91,7 @@ export default function TabTwoScreen() {
       console.error('Error getting token:', error);
     });
   }, []);
-  const testUpdateMeal = () => {
-    if (meals.length > 0 && meals[0].meals.length > 0) {
-      // Get the first meal
-      const firstMeal = meals[0].meals[0];
-      console.log("firstMeal  ", firstMeal.name, firstMeal.originalDate);
-      // Create an updated version with slightly modified macros
-      const updatedMeal: TransformedMeal = {
-        ...firstMeal,
-        nutrition: {
-          ...firstMeal.nutrition,
-          calories: firstMeal.nutrition.calories + 50,  // Add 50 calories
-          protein: firstMeal.nutrition.protein + 5,     // Add 5g protein
-          carbs: firstMeal.nutrition.carbs + 10,       // Add 10g carbs
-          fat: firstMeal.nutrition.fat + 7,            // Add 2g fat
-        }
-      };
 
-      console.log('Testing updateMeal with:', updatedMeal);
-      updateMeal(updatedMeal);
-    }
-  };
 
 
   return (
@@ -123,9 +103,7 @@ export default function TabTwoScreen() {
         <Text style={styles.headerTitle}>Macro Dashboard</Text>
       </LinearGradient>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <TouchableOpacity style={styles.testButton} onPress={testUpdateMeal}>
-          <Text style={styles.testButtonText}>Test Update Meal</Text>
-        </TouchableOpacity>
+
         {Object.keys(meals).length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>No meals logged yet</Text>
