@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, Text, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@clerk/clerk-expo';
+import { CameraGrid } from './CameraGrid';
 
 interface CameraViewProps {
     onPictureTaken: (uri: string) => void;
@@ -13,6 +14,7 @@ export function CameraView({ onPictureTaken }: CameraViewProps) {
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
     const [cameraRef, setCameraRef] = useState<ExpoCameraView | null>(null);
+    const [showGrid, setShowGrid] = useState(false);
 
     if (!permission) {
         return <View />;
@@ -107,6 +109,7 @@ export function CameraView({ onPictureTaken }: CameraViewProps) {
                 style={styles.camera}
                 facing={facing}
             >
+                {showGrid && <CameraGrid />}
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
                         <Text style={styles.text}>Flip</Text>
@@ -116,6 +119,9 @@ export function CameraView({ onPictureTaken }: CameraViewProps) {
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.button} onPress={pickImage}>
                         <Text style={styles.text}>Gallery</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress={() => setShowGrid(!showGrid)}>
+                        <Text style={styles.text}>Grid</Text>
                     </TouchableOpacity>
                 </View>
             </ExpoCameraView>
@@ -140,7 +146,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         backgroundColor: 'transparent',
         margin: 64,
-        justifyContent: 'space-between',
+        justifyContent: 'space-around',
     },
     button: {
         alignSelf: 'flex-end',
