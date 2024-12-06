@@ -15,7 +15,7 @@ COPY schema.prisma ./
 COPY migrations ./migrations
 
 # Generate Prisma client using direct path
-RUN ./node_modules/.bin/prisma generate
+RUN bunx prisma generate
 
 # Copy the rest of the backend application
 COPY . .
