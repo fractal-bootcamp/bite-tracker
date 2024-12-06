@@ -11,14 +11,9 @@ COPY package*.json ./
 
 # Install dependencies including TypeScript
 RUN npm install
-RUN npm install -g typescript
-RUN npm install module-alias
+RUN npm install -g typescript@5.7.2
 
-# Show installed packages
-RUN echo "=== Installed packages ===" && \
-    npm list || true
-
-# Copy TypeScript config
+# Copy TypeScript config first
 COPY tsconfig.json ./
 RUN echo "=== TypeScript Config ===" && \
     cat tsconfig.json
@@ -37,17 +32,15 @@ COPY . .
 RUN echo "=== Directory contents before build ===" && \
     ls -la
 
-# Try to build with verbose output
+# Build TypeScript
 RUN echo "=== Starting TypeScript build ===" && \
     tsc --version && \
-    tsc --outDir dist && \
+    tsc && \
     echo "=== Directory contents after build ===" && \
-    ls -la dist || true
+    ls -la dist
 
 # Expose the port your app runs on
 EXPOSE 4000
 
-RUN echo "Starting server docker"
-
 # Command to run migrations and start the server
-CMD npx prisma migrate deploy && npx prisma generate && npm start
+CMD npx prisma migrate deploy && npx prisma generate && node dist/index.js
