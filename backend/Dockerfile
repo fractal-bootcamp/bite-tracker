@@ -14,16 +14,12 @@ RUN echo $(ls -la node_modules) || true
 RUN echo $(ls -la node_modules/@prisma) || true
 RUN echo $(ls -la node_modules/@prisma/client) || true
 
-
 # Copy schema.prisma and generate client
 COPY schema.prisma ./
 COPY migrations ./migrations
 
-# Generate Prisma client with explicit output
-# ENV PRISMA_GENERATE_DATAPROXY=false
-# RUN mkdir -p /app/node_modules/.prisma/client
-RUN npx prisma generate
-
+# Generate Prisma client using direct path
+RUN ./node_modules/.bin/prisma generate
 
 # Copy the rest of the backend application
 COPY . .
@@ -32,4 +28,4 @@ COPY . .
 EXPOSE 3000
 
 # Start the application
-CMD bun run index.ts 
+CMD ./node_modules/.bin/prisma generate && bun run index.ts 
