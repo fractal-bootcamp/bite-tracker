@@ -8,7 +8,9 @@ COPY package.json bun.lockb ./
 # Install dependencies
 RUN bun install
 
-RUN echo "=== Node Modules ===" && ls -la node_modules/.prisma || true
+RUN echo "=== Node Modules ==="
+RUN echo $(ls -la node_modules) || true
+RUN echo $(ls -la node_modules/.prisma) || true
 
 
 # Copy schema.prisma and generate client
