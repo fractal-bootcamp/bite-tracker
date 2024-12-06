@@ -10,6 +10,10 @@ import * as SecureStore from 'expo-secure-store'
 import Onboarding from './components/Onboarding';
 
 
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+if (!API_URL) {
+  throw new Error("Missing EXPO_PUBLIC_BACKEND_URL");
+}
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import SignUpScreen from './components/SignUp';
@@ -65,7 +69,7 @@ function InitializeUser() {
         const token = await getToken();
         if (token && userId) {
           // Call your backend to create/initialize user
-          const response = await fetch('http://localhost:3000/initialize-user', {
+          const response = await fetch(`${API_URL}/initialize-user`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`,
