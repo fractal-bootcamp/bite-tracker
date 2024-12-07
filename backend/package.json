@@ -1,7 +1,6 @@
 {
   "name": "backend",
   "module": "index.ts",
-  "type": "module",
   "devDependencies": {
     "@types/bun": "latest",
     "prisma": "^6.0.1"
@@ -24,6 +23,8 @@
     "ts-node": "^10.9.2"
   },
   "scripts": {
-    "seed": "bun run seed.ts"
+    "seed": "bun run seed.ts",
+    "build": "npx tsc",
+    "start": "echo 'Starting server' && ls -la && node dist/index.js"
   }
 }

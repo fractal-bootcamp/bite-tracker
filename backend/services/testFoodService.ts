@@ -106,7 +106,7 @@ export async function testFoodService() {
 }
 
 // Make sure this is at the bottom of the file
-if (import.meta.main) {
+if (require.main === module) {
   console.log("Running test directly...");
   testFoodService()
     .then(() => {

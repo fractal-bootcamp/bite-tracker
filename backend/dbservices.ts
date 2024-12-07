@@ -1,6 +1,7 @@
 import type { User, Image, FoodItem } from "@prisma/client";
 import prisma from "./prismaclient";
 
+console.log("Initializing DB Services");
 export async function createUser(clerkId: string): Promise<User> {
   return prisma.user.create({
     data: { clerkId },
