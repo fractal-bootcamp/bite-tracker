@@ -17,15 +17,15 @@ console.log("Initializing Express");
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configure CORS
-app.use(
-  cors({
-    origin: ["http://localhost:8081", "http://localhost:19006"], // Add any other origins you need
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
+// // Configure CORS
+// app.use(
+//   cors({
+//     origin: ["http://localhost:8081", "http://localhost:19006"], // Add any other origins you need
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//     credentials: true,
+//   })
+// );
 
 // Set up multer for file uploads
 const storage = multer.memoryStorage();
