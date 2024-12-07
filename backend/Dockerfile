@@ -40,7 +40,7 @@ RUN echo "=== Starting TypeScript build ===" && \
     ls -la dist
 
 # Expose the port your app runs on
-EXPOSE 4000
+EXPOSE 3000
 
 # Command to run migrations and start the server
 CMD npx prisma migrate deploy && npx prisma generate && node dist/index.js
