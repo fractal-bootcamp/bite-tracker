@@ -4,7 +4,7 @@ import { Link } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { useAuth } from '@clerk/clerk-expo';
+import { useAuth, useUser } from '@clerk/clerk-expo';
 import { updateTargets, fetchMeals } from '../client';
 import { showToast } from '../utils/toast';
 
@@ -31,6 +31,8 @@ interface TargetInputProps {
 
 export default function HomeScreen(): JSX.Element {
   const { signOut, getToken } = useAuth();
+  const { user } = useUser();
+
 
   const [targets, setTargets] = useState<Targets>({
     calories: 2000,
@@ -146,7 +148,7 @@ export default function HomeScreen(): JSX.Element {
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <ThemedView style={styles.container}>
           <ThemedView style={styles.welcomeContainer}>
-            <ThemedText style={styles.welcomeText}>Welcome back!</ThemedText>
+            <ThemedText style={styles.welcomeText}>Welcome back! {user?.primaryEmailAddress?.emailAddress}</ThemedText>
           </ThemedView>
 
           <ThemedView style={styles.mainContent}>
